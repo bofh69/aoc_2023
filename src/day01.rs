@@ -23,7 +23,7 @@ pub fn solve_part1(data: &[InputType]) -> SolutionType {
             let first_digit = line
                 .chars()
                 .filter_map(|c| c.to_digit(10))
-                .nth(0)
+                .next()
                 .expect("No first digit");
             let last_digit = line
                 .chars()
@@ -49,7 +49,7 @@ fn first_spelled_digit(hay: &str) -> Option<(char, usize, usize)> {
         ("nine", '9'),
     ] {
         if let Some(pos) = hay.find(needle) {
-            if found == None {
+            if found.is_none() {
                 found = Some((c, pos, needle.len()))
             } else if let Some((_, old_pos, _)) = found {
                 if old_pos > pos {
@@ -65,27 +65,20 @@ fn first_spelled_digit(hay: &str) -> Option<(char, usize, usize)> {
 pub fn solve_part2(data: &[InputType]) -> SolutionType {
     data.iter()
         .map(|line| {
-            print!("{} becomes ", line);
             let mut line = line.to_string();
-            loop {
-                if let Some(found) = first_spelled_digit(&line) {
-                    line.replace_range(found.1..found.1 + found.2, &found.0.to_string())
-                } else {
-                    break;
-                }
+            while let Some(found) = first_spelled_digit(&line) {
+                line.replace_range(found.1..found.1 + found.2, &found.0.to_string())
             }
-            print!("{}", line);
             let first_digit = line
                 .chars()
                 .filter_map(|c| c.to_digit(10))
-                .nth(0)
+                .next()
                 .expect("No first digit");
             let last_digit = line
                 .chars()
                 .filter_map(|c| c.to_digit(10))
                 .last()
                 .expect("No last digit");
-            println!(" == {}{}", first_digit, last_digit);
             (first_digit * 10 + last_digit) as SolutionType
         })
         .sum::<SolutionType>()
