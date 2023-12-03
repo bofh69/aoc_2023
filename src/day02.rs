@@ -61,21 +61,9 @@ pub fn solve_part1(data: &[InputType]) -> SolutionType {
 pub fn solve_part2(data: &[InputType]) -> SolutionType {
     data.iter()
         .map(|rounds| {
-            let min_red = rounds
-                .iter()
-                .filter_map(|(r, _g, _b)| if *r > 0 { Some(*r) } else { None })
-                .max()
-                .expect("red");
-            let min_green = rounds
-                .iter()
-                .filter_map(|(_r, g, _b)| if *g > 0 { Some(*g) } else { None })
-                .max()
-                .expect("green");
-            let min_blue = rounds
-                .iter()
-                .filter_map(|(_r, _g, b)| if *b > 0 { Some(*b) } else { None })
-                .max()
-                .expect("blue");
+            let min_red = rounds.iter().map(|(r, _g, _b)| *r).max().expect("red");
+            let min_green = rounds.iter().map(|(_r, g, _b)| *g).max().expect("green");
+            let min_blue = rounds.iter().map(|(_r, _g, b)| *b).max().expect("blue");
             min_red * min_green * min_blue
         })
         .sum()
