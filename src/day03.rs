@@ -28,7 +28,7 @@ fn is_symbol(data: &[InputType], x: isize, y: isize) -> bool {
         return false;
     }
     let c = data[y as usize][x as usize];
-    return c != '.' && !c.is_digit(10);
+    c != '.' && !c.is_ascii_digit()
 }
 
 #[aoc(day3, part1)]
@@ -38,7 +38,7 @@ pub fn solve_part1(data: &[InputType]) -> SolutionType {
         let mut num = 0;
         let mut any_symbol = false;
         for (x, c) in row.iter().enumerate() {
-            if !c.is_digit(10) {
+            if !c.is_ascii_digit() {
                 if any_symbol {
                     sum += num;
                 }
@@ -78,15 +78,15 @@ fn add_number(numbers: &mut Vec<SolutionType>, data: &[InputType], x: isize, y: 
     }
     let row = &data[y as usize];
     let mut x = x as usize;
-    if !row[x].is_digit(10) {
+    if !row[x].is_ascii_digit() {
         return;
     }
     // println!("Number at x={}, y={}, row={:?}", x, y, row);
-    while x > 0 && row[x - 1].is_digit(10) {
+    while x > 0 && row[x - 1].is_ascii_digit() {
         x -= 1;
     }
     let mut sum = 0;
-    while x < row.len() && row[x].is_digit(10) {
+    while x < row.len() && row[x].is_ascii_digit() {
         sum = sum * 10 + row[x].to_digit(10).expect("digit");
         x += 1;
     }
@@ -105,7 +105,7 @@ pub fn solve_part2(data: &[InputType]) -> SolutionType {
                 add_number(&mut numbers, data, x - 1, y);
                 add_number(&mut numbers, data, x + 1, y);
                 if y > 0 {
-                    if data[(y - 1) as usize][x as usize].is_digit(10) {
+                    if data[(y - 1) as usize][x as usize].is_ascii_digit() {
                         add_number(&mut numbers, data, x, y - 1);
                     } else {
                         add_number(&mut numbers, data, x - 1, y - 1);
@@ -113,7 +113,7 @@ pub fn solve_part2(data: &[InputType]) -> SolutionType {
                     }
                 }
                 if y < data.len() as isize - 1 {
-                    if data[(y + 1) as usize][x as usize].is_digit(10) {
+                    if data[(y + 1) as usize][x as usize].is_ascii_digit() {
                         add_number(&mut numbers, data, x, y + 1);
                     } else {
                         add_number(&mut numbers, data, x - 1, y + 1);
