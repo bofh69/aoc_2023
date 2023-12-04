@@ -21,14 +21,12 @@ pub fn input_generator(input: &str) -> Vec<InputType> {
             (
                 cards
                     .0
-                    .split(' ')
-                    .filter(|s| !s.is_empty())
+                    .split_ascii_whitespace()
                     .map(|num| num.parse().expect("Number"))
                     .collect(),
                 cards
                     .1
-                    .split(' ')
-                    .filter(|s| !s.is_empty())
+                    .split_ascii_whitespace()
                     .map(|num| num.parse().expect("Number"))
                     .collect(),
             )
@@ -47,7 +45,7 @@ pub fn solve_part1(data: &[InputType]) -> SolutionType {
 
 #[aoc(day4, part2)]
 pub fn solve_part2(data: &[InputType]) -> SolutionType {
-    let mut n_copies = vec![];
+    let mut n_copies = Vec::with_capacity(data.len());
     n_copies.resize_with(data.len(), || 1);
 
     data.iter()
