@@ -102,5 +102,17 @@ pub fn solve_part1(data: &InputType) -> SolutionType {
 
 #[aoc(day5, part2)]
 pub fn solve_part2(data: &InputType) -> SolutionType {
-    data.0.len() as SolutionType
+    let mut numbers = data.0.iter();
+    let mut location = SolutionType::MAX;
+    while let Some(start) = numbers.next() {
+        let size = numbers.next().expect("seed size");
+        for i in *start..(start+size) {
+            let min = translate_number(i, "seed", "location", data);
+            if min < location {
+                println!("New min {}", min);
+                location = min;
+            }
+        }
+    }
+    location
 }
