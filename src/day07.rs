@@ -50,28 +50,27 @@ fn get_type(a: &[u8; 5]) -> u8 {
         n_cards += 1;
     }
     count.sort();
-    count.reverse();
-    if count[0] == 5 {
+    if count[4] == 5 {
         // Five of a kind
         return 7;
     }
-    if count[0] == 4 {
+    if count[4] == 4 {
         // Four of a kind
         return 6;
     }
-    if count[0] == 3 && count[1] == 2 {
+    if count[4] == 3 && count[3] == 2 {
         // Full house
         return 5;
     }
-    if count[0] == 3 {
+    if count[4] == 3 {
         // Three of a kind
         return 4;
     }
-    if count[0] == 2 && count[1] == 2 {
+    if count[4] == 2 && count[3] == 2 {
         // Two pair
         return 3;
     }
-    if count[0] == 2 {
+    if count[4] == 2 {
         // One pair
         return 2;
     }
@@ -131,28 +130,27 @@ fn get_type2(a: &[u8; 5]) -> u8 {
         n_cards += 1;
     }
     count.sort();
-    count.reverse();
-    if jokers + count[0] == 5 {
+    if jokers + count[4] == 5 {
         // Five of a kind
         return 7;
     }
-    if jokers + count[0] == 4 {
+    if jokers + count[4] == 4 {
         // Four of a kind
         return 6;
     }
-    if (jokers + count[0] == 3 && count[1] == 2) || (jokers + count[1] == 3 && count[0] == 2) {
+    if (jokers + count[4] == 3 && count[3] == 2) || (jokers + count[3] == 3 && count[4] == 2) {
         // Full house
         return 5;
     }
-    if jokers + count[0] == 3 {
+    if jokers + count[4] == 3 {
         // Three of a kind
         return 4;
     }
-    if count[0] == 2 && (jokers + count[1] == 2) {
+    if count[4] == 2 && (jokers + count[3] == 2) {
         // Two pair
         return 3;
     }
-    if jokers + count[0] == 2 {
+    if jokers + count[4] == 2 {
         // One pair
         return 2;
     }
