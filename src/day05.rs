@@ -106,7 +106,7 @@ pub fn solve_part2(data: &InputType) -> SolutionType {
     let mut location = SolutionType::MAX;
     while let Some(start) = numbers.next() {
         let size = numbers.next().expect("seed size");
-        for i in *start..(start+size) {
+        for i in *start..(start + size) {
             let min = translate_number(i, "seed", "location", data);
             if min < location {
                 println!("New min {}", min);
