@@ -4,125 +4,97 @@
 
 use aoc_runner_derive::{aoc, aoc_generator};
 
-type InputType = Vec<char>;
+use super::world::*;
+
 type SolutionType = usize;
 
 #[aoc_generator(day3)]
-pub fn input_generator(input: &str) -> Vec<InputType> {
+pub fn input_generator(input: &str) -> Map {
     // 467..114..
     // ...*......
-    input.lines().map(|line| line.chars().collect()).collect()
+    Map::from_string(input)
 }
 
-fn is_symbol(data: &[InputType], x: isize, y: isize) -> bool {
-    if x < 0 {
-        return false;
-    }
-    if y < 0 {
-        return false;
-    }
-    if y >= data.len() as isize {
-        return false;
-    }
-    if x >= data[0].len() as isize {
-        return false;
-    }
-    let c = data[y as usize][x as usize];
-    c != '.' && !c.is_ascii_digit()
+fn is_symbol(c: u8) -> bool {
+    c != b'.' && !char::from(c).is_ascii_digit()
 }
 
 #[aoc(day3, part1)]
-pub fn solve_part1(data: &[InputType]) -> SolutionType {
+pub fn solve_part1(map: &Map) -> SolutionType {
     let mut sum = 0;
-    for (y, row) in data.iter().enumerate() {
-        let mut num = 0;
-        let mut any_symbol = false;
-        for (x, c) in row.iter().enumerate() {
-            if !c.is_ascii_digit() {
-                if any_symbol {
-                    sum += num;
-                }
+
+    let mut num: SolutionType = 0;
+    let mut any_symbol = false;
+
+    for (pos, c) in map.iter() {
+        if pos.x == 0 {
+            if any_symbol {
+                sum += num;
                 any_symbol = false;
-                num = 0;
-            } else {
-                num = num * 10 + c.to_digit(10).expect("Number");
-                if !any_symbol {
-                    for (dx, dy) in [
-                        (-1, -1),
-                        (-1, 0),
-                        (-1, 1),
-                        (0, 1),
-                        (1, 1),
-                        (1, 0),
-                        (1, -1),
-                        (0, -1),
-                    ] {
-                        any_symbol = is_symbol(data, x as isize + dx, y as isize + dy);
-                        if any_symbol {
-                            break;
-                        }
+            }
+            num = 0;
+        }
+        if !char::from(c).is_ascii_digit() {
+            if any_symbol {
+                sum += num;
+            }
+            any_symbol = false;
+            num = 0;
+        } else {
+            num = num * 10 + SolutionType::from(c - b'0');
+            if !any_symbol {
+                for (_pos, _dir, c) in map.neighbors(pos) {
+                    any_symbol = is_symbol(c);
+                    if any_symbol {
+                        break;
                     }
                 }
             }
-        }
-        if any_symbol {
-            sum += num;
         }
     }
     sum as usize
 }
 
-fn add_number(numbers: &mut Vec<SolutionType>, data: &[InputType], x: isize, y: isize) {
-    if x < 0 || x >= data[0].len() as isize {
+fn add_number(numbers: &mut Vec<SolutionType>, map: &Map, pos: Point) {
+    if !char::from(map.get_at(pos)).is_ascii_digit() {
         return;
     }
-    let row = &data[y as usize];
-    let mut x = x as usize;
-    if !row[x].is_ascii_digit() {
-        return;
-    }
-    // println!("Number at x={}, y={}, row={:?}", x, y, row);
-    while x > 0 && row[x - 1].is_ascii_digit() {
-        x -= 1;
-    }
+    let mut pos = map.walk_until(pos, Dir::West, |c| !char::from(c).is_ascii_digit());
     let mut sum = 0;
-    while x < row.len() && row[x].is_ascii_digit() {
-        sum = sum * 10 + row[x].to_digit(10).expect("digit");
-        x += 1;
+    while map.is_inside_map(pos) && char::from(map.get_at(pos)).is_ascii_digit() {
+        sum = sum * 10 + SolutionType::from(map.get_at(pos) - b'0');
+        pos = pos.walk(Dir::East);
     }
     numbers.push(sum as SolutionType);
 }
 
 #[aoc(day3, part2)]
-pub fn solve_part2(data: &[InputType]) -> SolutionType {
+pub fn solve_part2(map: &Map) -> SolutionType {
     let mut sum = 0;
-    for (y, row) in data.iter().enumerate() {
-        for (x, c) in row.iter().enumerate() {
-            let x = x as isize;
-            let y = y as isize;
-            if *c == '*' {
-                let mut numbers = vec![];
-                add_number(&mut numbers, data, x - 1, y);
-                add_number(&mut numbers, data, x + 1, y);
-                if y > 0 {
-                    if data[(y - 1) as usize][x as usize].is_ascii_digit() {
-                        add_number(&mut numbers, data, x, y - 1);
-                    } else {
-                        add_number(&mut numbers, data, x - 1, y - 1);
-                        add_number(&mut numbers, data, x + 1, y - 1);
-                    }
+
+    for (pos, c) in map.iter() {
+        if c == b'*' {
+            let mut numbers = vec![];
+            add_number(&mut numbers, map, pos.walk(Dir::West));
+            add_number(&mut numbers, map, pos.walk(Dir::East));
+            if pos.y > 0 {
+                if char::from(map.get_at(pos.walk(Dir::North))).is_ascii_digit() {
+                    add_number(&mut numbers, map, pos.walk(Dir::North));
+                } else {
+                    add_number(&mut numbers, map, pos.walk(Dir::NorthWest));
+                    add_number(&mut numbers, map, pos.walk(Dir::NorthEast));
                 }
-                if y < data.len() as isize - 1 {
-                    if data[(y + 1) as usize][x as usize].is_ascii_digit() {
-                        add_number(&mut numbers, data, x, y + 1);
-                    } else {
-                        add_number(&mut numbers, data, x - 1, y + 1);
-                        add_number(&mut numbers, data, x + 1, y + 1);
-                    }
+            }
+            if pos.y < map.get_height() - 1 {
+                if char::from(map.get_at(pos.walk(Dir::South))).is_ascii_digit() {
+                    add_number(&mut numbers, map, pos.walk(Dir::South));
+                } else {
+                    add_number(&mut numbers, map, pos.walk(Dir::SouthWest));
+                    add_number(&mut numbers, map, pos.walk(Dir::SouthEast));
                 }
-                if numbers.len() == 2 {
-                    sum += numbers[0] * numbers[1];
-                }
+            }
+            if numbers.len() == 2 {
+                sum += numbers[0] * numbers[1];
             }
         }
     }
