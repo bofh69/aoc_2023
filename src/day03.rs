@@ -9,7 +9,7 @@ use super::world::*;
 type SolutionType = usize;
 
 #[aoc_generator(day3)]
-pub fn input_generator(input: &str) -> Map {
+pub fn input_generator(input: &str) -> Map<i32> {
     // 467..114..
     // ...*......
     Map::from_string(input)
@@ -55,7 +55,7 @@ pub fn solve_part1(map: &Map) -> SolutionType {
     sum as usize
 }
 
-fn add_number(numbers: &mut Vec<SolutionType>, map: &Map, pos: Point) {
+fn add_number(numbers: &mut Vec<SolutionType>, map: &Map<i32>, pos: Point<i32>) {
     if !char::from(map.get_at(pos)).is_ascii_digit() {
         return;
     }

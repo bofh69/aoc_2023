@@ -1,58 +1,62 @@
-type Length = i32;
-
 mod dir;
 mod point;
 pub use dir::Dir;
 pub use point::Point;
+pub use point::Length;
+
+use num::{One, Zero};
 
 #[derive(Debug, Clone, PartialEq, Hash)]
-pub struct Map {
+pub struct Map<T: point::Length = i32> {
     data: Vec<u8>,
-    width: Length,
-    height: Length,
+    width: T,
+    height: T,
     has_border: bool,
 }
 
-pub struct MapIterator<'a> {
-    map: &'a Map,
-    pos: Point,
+pub struct MapIterator<'a, T: point::Length> {
+    map: &'a Map<T>,
+    pos: Point<T>,
 }
 
-impl<'a> MapIterator<'a> {
-    pub fn new(map: &'a Map) -> Self {
+impl<'a, T: point::Length> MapIterator<'a, T> {
+    pub fn new(map: &'a Map<T>) -> Self {
         Self {
             map,
-            pos: Point { x: 0, y: 0 },
+            pos: Point {
+                x: Zero::zero(),
+                y: Zero::zero(),
+            },
         }
     }
 }
 
-impl<'a> Iterator for MapIterator<'a> {
-    type Item = (Point, u8);
+impl<'a, T: point::Length> Iterator for MapIterator<'a, T> {
+    type Item = (Point<T>, u8);
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.pos.x >= self.map.get_width() {
-            self.pos.x = 0;
-            self.pos.y += 1;
+            self.pos.x = Zero::zero();
+            self.pos.y += One::one();
         }
         if self.pos.y >= self.map.get_height() {
             None
         } else {
             let pos = self.pos;
-            self.pos.x += 1;
+            self.pos.x += One::one();
             Some((pos, self.map.get_at(pos)))
         }
     }
 }
 
-pub struct MapNeighborIterator<'a> {
-    map: &'a Map,
-    pos: Point,
+pub struct MapNeighborIterator<'a, T: point::Length> {
+    map: &'a Map<T>,
+    pos: Point<T>,
     dir: Dir,
 }
 
-impl<'a> MapNeighborIterator<'a> {
-    pub fn new(map: &'a Map, pos: Point) -> Self {
+impl<'a, T: point::Length> MapNeighborIterator<'a, T> {
+    pub fn new(map: &'a Map<T>, pos: Point<T>) -> Self {
         Self {
             map,
             pos,
@@ -61,8 +65,8 @@ impl<'a> MapNeighborIterator<'a> {
     }
 }
 
-impl<'a> Iterator for MapNeighborIterator<'a> {
-    type Item = (Point, Dir, u8);
+impl<'a, T: point::Length> Iterator for MapNeighborIterator<'a, T> {
+    type Item = (Point<T>, Dir, u8);
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
@@ -84,29 +88,29 @@ impl<'a> Iterator for MapNeighborIterator<'a> {
     }
 }
 
-impl Map {
-    pub fn get_width(&self) -> Length {
+impl<T: point::Length> Map<T> {
+    pub fn get_width(&self) -> T {
         self.width
     }
 
-    pub fn get_height(&self) -> Length {
+    pub fn get_height(&self) -> T {
         self.height
     }
 
-    fn get_index_for(&self, pos: Point) -> usize {
+    fn get_index_for(&self, pos: Point<T>) -> usize {
         usize::try_from(pos.x + pos.y * self.width).expect("Positive index")
     }
 
-    pub fn get_at(&self, pos: Point) -> u8 {
+    pub fn get_at(&self, pos: Point<T>) -> u8 {
         self.data[self.get_index_for(pos)]
     }
 
-    pub fn set_at(&mut self, pos: Point, val: u8) {
+    pub fn set_at(&mut self, pos: Point<T>, val: u8) {
         let index = self.get_index_for(pos);
         self.data[index] = val
     }
 
-    pub fn new(width: Length, height: Length) -> Self {
+    pub fn new(width: T, height: T) -> Self {
         let mut data =
             Vec::with_capacity(usize::try_from(width * height).expect("Positive number"));
         data.resize_with(
@@ -131,8 +135,8 @@ impl Map {
             }
         }
 
-        let width = Length::try_from(width).expect("Positive width");
-        let height = Length::try_from(height).expect("Positive height");
+        let width = T::try_from(width).expect("Positive width");
+        let height = T::try_from(height).expect("Positive height");
         Self {
             data,
             width,
@@ -166,8 +170,8 @@ impl Map {
         }
         data.push(b'+');
 
-        let width = Length::try_from(width).expect("Positive width");
-        let height = Length::try_from(height).expect("Positive height");
+        let width = T::try_from(width).expect("Positive width");
+        let height = T::try_from(height).expect("Positive height");
         Self {
             data,
             width,
@@ -185,17 +189,17 @@ impl Map {
         }
     }
 
-    pub fn iter(&self) -> MapIterator {
+    pub fn iter(&self) -> MapIterator<T> {
         MapIterator::new(self)
     }
 
-    pub fn neighbors(&self, pos: Point) -> MapNeighborIterator {
+    pub fn neighbors(&self, pos: Point<T>) -> MapNeighborIterator<T> {
         MapNeighborIterator::new(self, pos)
     }
 
-    pub fn transform_area<F>(&mut self, from: Point, to: Point, mut f: F)
+    pub fn transform_area<F>(&mut self, from: Point<T>, to: Point<T>, mut f: F)
     where
-        F: FnMut(&Self, Point, u8) -> u8,
+        F: FnMut(&Self, Point<T>, u8) -> u8,
     {
         let mut new_map = Map::new(self.width, self.height);
         for (pos, c) in self.iter() {
@@ -212,7 +216,7 @@ impl Map {
 
     pub fn transform<F>(&mut self, f: F)
     where
-        F: FnMut(&Self, Point, u8) -> u8,
+        F: FnMut(&Self, Point<T>, u8) -> u8,
     {
         if self.has_border {
             self.transform_area(
@@ -235,7 +239,7 @@ impl Map {
         }
     }
 
-    pub fn is_inside_map(&self, pos: Point) -> bool {
+    pub fn is_inside_map(&self, pos: Point<T>) -> bool {
         pos.x >= 0 && pos.y >= 0 && pos.x < self.get_width() && pos.y < self.get_height()
     }
 
@@ -243,7 +247,7 @@ impl Map {
     ///
     /// It stops when the next point in that direction is outside of the map or causes f to return
     /// false
-    pub fn walk_until<F>(&self, pos: Point, dir: Dir, mut f: F) -> Point
+    pub fn walk_until<F>(&self, pos: Point<T>, dir: Dir, mut f: F) -> Point<T>
     where
         F: FnMut(u8) -> bool,
     {
@@ -260,7 +264,7 @@ impl Map {
 
     /// flood fill the map from point pos with val
     /// Only fills north, south, east and west of each position
-    pub fn flood_cardinal(&mut self, pos: Point, empty: u8, val: u8) {
+    pub fn flood_cardinal(&mut self, pos: Point<T>, empty: u8, val: u8) {
         if self.get_at(pos) != empty {
             // Nothing to fill here
             return;
