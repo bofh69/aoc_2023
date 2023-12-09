@@ -22,7 +22,9 @@ pub fn input_generator(input: &str) -> InputType {
 
     let tree = input
         .map(|s| {
-            let caps = re.captures(s).expect(&format!("Didn't match: {}", s));
+            let caps = re
+                .captures(s)
+                .unwrap_or_else(|| panic!("Didn't match: {}", s));
             (
                 caps[1].to_string(),
                 (caps[2].to_string(), caps[3].to_string()),
@@ -62,7 +64,7 @@ fn find_cycle(pos: &str, data: &InputType) -> (u64, u64) {
             'R' => &data.1.get(pos).expect("Find next").1,
             _ => panic!("Unknown direction"),
         };
-        if path.iter().filter(|x| **x == pos).count() == 2 && pos.as_bytes()[2] == 'Z' as u8 {
+        if path.iter().filter(|x| **x == pos).count() == 2 && pos.as_bytes()[2] == b'Z' {
             let mut length = 0;
             let mut offset = 0;
             for old_pos in &path {
@@ -79,7 +81,7 @@ fn find_cycle(pos: &str, data: &InputType) -> (u64, u64) {
                             path[length as usize - 1]
                         );
                     }
-                } else if old_pos.as_bytes()[2] == 'Z' as u8 {
+                } else if old_pos.as_bytes()[2] == b'Z' {
                     println!("Goal at {}, diff={}", length, length - offset);
                 }
                 length += 1;
@@ -99,12 +101,7 @@ fn find_cycle(pos: &str, data: &InputType) -> (u64, u64) {
 
 #[aoc(day8, part2)]
 pub fn solve_part2(data: &InputType) -> SolutionType {
-    let positions: Vec<_> = data
-        .1
-        .iter()
-        .map(|(s, _)| s)
-        .filter(|s| s.as_bytes()[2] == 'A' as u8)
-        .collect();
+    let positions: Vec<_> = data.1.keys().filter(|s| s.as_bytes()[2] == b'A').collect();
 
     println!("Start: {:?}", positions);
 
