@@ -296,7 +296,7 @@ impl Map {
                 self.flood_cardinal(pos, empty, val);
             }
             pos.y += 2;
-            if pos.y <= self.get_height() - 1 {
+            if pos.y < self.get_height() {
                 self.flood_cardinal(pos, empty, val);
             }
             pos.y -= 1;
@@ -308,12 +308,12 @@ impl Map {
     where
         F: FnMut(Point, u8) -> Option<u8>,
     {
-        if f(pos, self.get_at(pos)) == None {
+        if f(pos, self.get_at(pos)).is_none() {
             // Nothing to fill here
             return;
         }
-        let min_pos = self.walk_until(pos, Dir::West, |pos, c| f(pos, c) == None);
-        let max_pos = self.walk_until(pos, Dir::East, |pos, c| f(pos, c) == None);
+        let min_pos = self.walk_until(pos, Dir::West, |pos, c| f(pos, c).is_none());
+        let max_pos = self.walk_until(pos, Dir::East, |pos, c| f(pos, c).is_none());
 
         let mut pos = min_pos;
         while pos.x <= max_pos.x {
@@ -328,7 +328,7 @@ impl Map {
                 self.flood_cardinal_with(pos, f);
             }
             pos.y += 2;
-            if pos.y <= self.get_height() - 1 {
+            if pos.y < self.get_height() {
                 self.flood_cardinal_with(pos, f);
             }
             pos.y -= 1;

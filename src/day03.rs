@@ -52,7 +52,7 @@ pub fn solve_part1(map: &Map) -> SolutionType {
             }
         }
     }
-    sum as usize
+    sum
 }
 
 fn add_number(numbers: &mut Vec<SolutionType>, map: &Map, pos: Point) {

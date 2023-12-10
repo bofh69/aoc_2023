@@ -11,52 +11,23 @@ type SolutionType = i32;
 
 #[aoc_generator(day10)]
 pub fn input_generator(input: &str) -> Map {
-    // ..........
-    // ...S-7....
-    // ...|.|....
-    // ...L-J....
-    // ..........
     Map::from_string(input)
 }
 
 fn is_up(c: u8) -> bool {
-    match c {
-        b'S' => true,
-        b'|' => true,
-        b'L' => true,
-        b'J' => true,
-        _ => false,
-    }
+    matches!(c, b'S' | b'|' | b'L' | b'J')
 }
 
 fn is_down(c: u8) -> bool {
-    match c {
-        b'S' => true,
-        b'|' => true,
-        b'F' => true,
-        b'7' => true,
-        _ => false,
-    }
+    matches!(c, b'S' | b'|' | b'F' | b'7')
 }
 
 fn is_left(c: u8) -> bool {
-    match c {
-        b'S' => true,
-        b'-' => true,
-        b'J' => true,
-        b'7' => true,
-        _ => false,
-    }
+    matches!(c, b'S' | b'-' | b'J' | b'7')
 }
 
 fn is_right(c: u8) -> bool {
-    match c {
-        b'S' => true,
-        b'-' => true,
-        b'F' => true,
-        b'L' => true,
-        _ => false,
-    }
+    matches!(c, b'S' | b'-' | b'F' | b'L')
 }
 
 fn find_exits(map: &Map, from: Point) -> [Point; 2] {
@@ -181,7 +152,7 @@ pub fn solve_part2(map: &Map) -> SolutionType {
                     map2.set_at(
                         Point {
                             x: pos.x * s + i,
-                            y: pos.y * s + 0,
+                            y: pos.y * s,
                         },
                         c,
                     );
@@ -205,7 +176,7 @@ pub fn solve_part2(map: &Map) -> SolutionType {
                 map2.set_at(
                     Point {
                         x: pos.x * s + 1,
-                        y: pos.y * s + 0,
+                        y: pos.y * s,
                     },
                     c,
                 );
@@ -227,7 +198,7 @@ pub fn solve_part2(map: &Map) -> SolutionType {
             b'-' => {
                 map2.set_at(
                     Point {
-                        x: pos.x * s + 0,
+                        x: pos.x * s,
                         y: pos.y * s + 1,
                     },
                     c,
@@ -258,7 +229,7 @@ pub fn solve_part2(map: &Map) -> SolutionType {
                 map2.set_at(
                     Point {
                         x: pos.x * s + 1,
-                        y: pos.y * s + 0,
+                        y: pos.y * s,
                     },
                     b'|',
                 );
@@ -271,7 +242,7 @@ pub fn solve_part2(map: &Map) -> SolutionType {
                 );
                 map2.set_at(
                     Point {
-                        x: pos.x * s + 0,
+                        x: pos.x * s,
                         y: pos.y * s + 1,
                     },
                     b'-',
@@ -318,13 +289,13 @@ pub fn solve_part2(map: &Map) -> SolutionType {
                 map2.set_at(
                     Point {
                         x: pos.x * s + 1,
-                        y: pos.y * s + 0,
+                        y: pos.y * s,
                     },
                     b'|',
                 );
                 map2.set_at(
                     Point {
-                        x: pos.x * s + 0,
+                        x: pos.x * s,
                         y: pos.y * s + 1,
                     },
                     b'-',
@@ -347,7 +318,7 @@ pub fn solve_part2(map: &Map) -> SolutionType {
                 );
                 map2.set_at(
                     Point {
-                        x: pos.x * s + 0,
+                        x: pos.x * s,
                         y: pos.y * s + 1,
                     },
                     b'-',
@@ -364,7 +335,7 @@ pub fn solve_part2(map: &Map) -> SolutionType {
                 map2.set_at(
                     Point {
                         x: pos.x * s + 1,
-                        y: pos.y * s + 0,
+                        y: pos.y * s,
                     },
                     b'|',
                 );
@@ -394,8 +365,8 @@ pub fn solve_part2(map: &Map) -> SolutionType {
         }
     });
 
-    // This assumes Assume 0.0 is connected everywhere outside,
-    // which is always the case as long as S isn't along a border.
+    // This assumes (0, 0) is connected everywhere outside,
+    // which was the case with my input.
     map2.flood_cardinal_with(Point { x: 0, y: 0 }, &mut |_p, c| {
         if c != b'O' && c != b'*' {
             Some(b'O')
@@ -414,7 +385,7 @@ pub fn solve_part2(map: &Map) -> SolutionType {
                     y: pos.y * 3,
                 };
                 let c = map2.get_at(pos2);
-                c != b'O' && !loop_segs.contains(&pos)
+                c != b'O' && !loop_segs.contains(pos)
             })
             .count(),
     )
