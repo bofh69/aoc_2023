@@ -59,7 +59,7 @@ fn add_number(numbers: &mut Vec<SolutionType>, map: &Map, pos: Point) {
     if !char::from(map.get_at(pos)).is_ascii_digit() {
         return;
     }
-    let mut pos = map.walk_until(pos, Dir::West, |c| !char::from(c).is_ascii_digit());
+    let mut pos = map.walk_until(pos, Dir::West, |_, c| !char::from(c).is_ascii_digit());
     let mut sum = 0;
     while map.is_inside_map(pos) && char::from(map.get_at(pos)).is_ascii_digit() {
         sum = sum * 10 + SolutionType::from(map.get_at(pos) - b'0');

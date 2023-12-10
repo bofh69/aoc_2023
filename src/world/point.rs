@@ -6,7 +6,7 @@ type Length = i32;
 
 use super::dir::Dir;
 
-#[derive(Debug, Copy, Clone, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct Point<T = Length> {
     pub x: T,
     pub y: T,

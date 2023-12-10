@@ -180,13 +180,25 @@ impl Map {
         }
     }
 
-    pub fn print(&self) {
+    pub fn print_with_overlay<F>(&self, mut f: F)
+    where
+        F: FnMut(Point, u8) -> Option<u8>,
+    {
         for y in 0..self.height {
             for x in 0..self.width {
-                print!("{}", char::from(self.get_at(Point { x, y })));
+                let pos = Point { x, y };
+                let mut c = self.get_at(pos);
+                if let Some(new_c) = f(pos, c) {
+                    c = new_c;
+                }
+                print!("{}", char::from(c));
             }
             println!();
         }
+    }
+
+    pub fn print(&self) {
+        self.print_with_overlay(|_, _| None);
     }
 
     pub fn iter(&self) -> MapIterator {
@@ -249,12 +261,12 @@ impl Map {
     /// false
     pub fn walk_until<F>(&self, pos: Point, dir: Dir, mut f: F) -> Point
     where
-        F: FnMut(u8) -> bool,
+        F: FnMut(Point, u8) -> bool,
     {
         let mut pos = pos;
         loop {
             let new_pos = pos.walk(dir);
-            if !self.is_inside_map(new_pos) || f(self.get_at(new_pos)) {
+            if !self.is_inside_map(new_pos) || f(new_pos, self.get_at(new_pos)) {
                 break;
             }
             pos = new_pos;
@@ -269,8 +281,8 @@ impl Map {
             // Nothing to fill here
             return;
         }
-        let min_pos = self.walk_until(pos, Dir::West, |c| c != empty);
-        let max_pos = self.walk_until(pos, Dir::East, |c| c != empty);
+        let min_pos = self.walk_until(pos, Dir::West, |_, c| c != empty);
+        let max_pos = self.walk_until(pos, Dir::East, |_, c| c != empty);
 
         let mut pos = min_pos;
         while pos.x <= max_pos.x {
@@ -278,15 +290,49 @@ impl Map {
             pos = pos.walk(Dir::East);
         }
         pos = min_pos;
-        if pos.y > 0 {
-            while pos.x <= max_pos.x {
-                pos.y -= 1;
+        while pos.x <= max_pos.x {
+            pos.y -= 1;
+            if pos.y > 0 {
                 self.flood_cardinal(pos, empty, val);
-                pos.y += 2;
-                self.flood_cardinal(pos, empty, val);
-                pos.y -= 1;
-                pos = pos.walk(Dir::East);
             }
+            pos.y += 2;
+            if pos.y <= self.get_height() - 1 {
+                self.flood_cardinal(pos, empty, val);
+            }
+            pos.y -= 1;
+            pos = pos.walk(Dir::East);
+        }
+    }
+
+    pub fn flood_cardinal_with<F>(&mut self, pos: Point, f: &mut F)
+    where
+        F: FnMut(Point, u8) -> Option<u8>,
+    {
+        if f(pos, self.get_at(pos)) == None {
+            // Nothing to fill here
+            return;
+        }
+        let min_pos = self.walk_until(pos, Dir::West, |pos, c| f(pos, c) == None);
+        let max_pos = self.walk_until(pos, Dir::East, |pos, c| f(pos, c) == None);
+
+        let mut pos = min_pos;
+        while pos.x <= max_pos.x {
+            let val = f(pos, self.get_at(pos)).expect("value");
+            self.set_at(pos, val);
+            pos = pos.walk(Dir::East);
+        }
+        pos = min_pos;
+        while pos.x <= max_pos.x {
+            pos.y -= 1;
+            if pos.y >= 0 {
+                self.flood_cardinal_with(pos, f);
+            }
+            pos.y += 2;
+            if pos.y <= self.get_height() - 1 {
+                self.flood_cardinal_with(pos, f);
+            }
+            pos.y -= 1;
+            pos = pos.walk(Dir::East);
         }
     }
 }
