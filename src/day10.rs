@@ -139,253 +139,35 @@ pub fn solve_part2(map: &Map) -> SolutionType {
         }
     }
 
-    // Tripple the size of the map:
-    let map_width = map.get_width() * 3;
-    let map_height = map.get_height() * 3;
-
-    let mut map2 = Map::new(map_width, map_height);
-    for (pos, c) in map.iter() {
-        let s = 3;
-        match c {
-            b'O' => {
-                for i in 0..s {
-                    map2.set_at(
-                        Point {
-                            x: pos.x * s + i,
-                            y: pos.y * s,
-                        },
-                        c,
-                    );
-                    map2.set_at(
-                        Point {
-                            x: pos.x * s + i,
-                            y: pos.y * s + 1,
-                        },
-                        c,
-                    );
-                    map2.set_at(
-                        Point {
-                            x: pos.x * s + i,
-                            y: pos.y * s + 2,
-                        },
-                        c,
-                    );
-                }
-            }
-            b'|' => {
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s,
-                    },
-                    c,
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s + 1,
-                    },
-                    c,
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s + 2,
-                    },
-                    c,
-                );
-            }
-            b'-' => {
-                map2.set_at(
-                    Point {
-                        x: pos.x * s,
-                        y: pos.y * s + 1,
-                    },
-                    c,
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s + 1,
-                    },
-                    c,
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 2,
-                        y: pos.y * s + 1,
-                    },
-                    c,
-                );
-            }
-            b'S' => {
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s + 1,
-                    },
-                    c,
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s,
-                    },
-                    b'|',
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s + 2,
-                    },
-                    b'|',
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s,
-                        y: pos.y * s + 1,
-                    },
-                    b'-',
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 2,
-                        y: pos.y * s + 1,
-                    },
-                    b'-',
-                );
-            }
-            b'F' => {
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s + 1,
-                    },
-                    c,
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s + 2,
-                    },
-                    b'|',
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 2,
-                        y: pos.y * s + 1,
-                    },
-                    b'-',
-                );
-            }
-            b'J' => {
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s + 1,
-                    },
-                    c,
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s,
-                    },
-                    b'|',
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s,
-                        y: pos.y * s + 1,
-                    },
-                    b'-',
-                );
-            }
-            b'7' => {
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s + 1,
-                    },
-                    c,
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s + 2,
-                    },
-                    b'|',
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s,
-                        y: pos.y * s + 1,
-                    },
-                    b'-',
-                );
-            }
-            b'L' => {
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s + 1,
-                    },
-                    c,
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 1,
-                        y: pos.y * s,
-                    },
-                    b'|',
-                );
-                map2.set_at(
-                    Point {
-                        x: pos.x * s + 2,
-                        y: pos.y * s + 1,
-                    },
-                    b'-',
-                );
-            }
-            b'.' => {}
-            _ => panic!("Unkown char {}", c as char),
-        }
-    }
-
-    // Mark the real path here, could just as have been done in the first transform
-    map2.transform(|_map, pos, c| {
-        let pos2 = Point {
-            x: pos.x / 3,
-            y: pos.y / 3,
-        };
-        if c != b'.' && loop_segs.contains(&pos2) {
-            b'*'
-        } else {
-            b'.'
-        }
-    });
-
-    // This assumes (0, 0) is connected everywhere outside,
-    // which was the case with my input.
-    map2.flood_cardinal_with(Point { x: 0, y: 0 }, &mut |_p, c| {
-        if c != b'O' && c != b'*' {
-            Some(b'O')
-        } else {
-            None
-        }
-    });
-
-    // map2.print();
-
+    let mut inside = false;
+    let mut start = b'.';
     i32::try_from(
         map.iter()
-            .filter(|(pos, _c)| {
-                let pos2 = Point {
-                    x: pos.x * 3,
-                    y: pos.y * 3,
-                };
-                let c = map2.get_at(pos2);
-                c != b'O' && !loop_segs.contains(pos)
+            .filter(|(pos, c)| {
+                if pos.x == 0 {
+                    inside = false;
+                }
+                if loop_segs.contains(pos) {
+                    if *c == b'|' {
+                        inside = !inside;
+                    } else if matches!(*c, b'F' | b'J' | b'L' | b'7') {
+                        if start == b'.' {
+                            start = *c;
+                        } else {
+                            if start == b'F' {
+                                if *c == b'J' {
+                                    inside = !inside;
+                                }
+                            } else if *c == b'7' {
+                                inside = !inside;
+                            }
+                            start = b'.';
+                        }
+                    }
+                    false
+                } else {
+                    inside
+                }
             })
             .count(),
     )
