@@ -8,4 +8,4 @@ SPDX-License-Identifier: GPL-3.0-or-later
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/bofh69/aoc_2023/ci.yml?branch=main)
 
 # aoc_2023
-Advent of Code 2023
+[Advent of Code 2023](https://www.adventofcode.com/2023/)
