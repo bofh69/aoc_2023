@@ -78,14 +78,8 @@ fn find_exits(map: &Map, from: Point) -> [Point; 2] {
 
 #[aoc(day10, part1)]
 pub fn solve_part1(map: &Map) -> SolutionType {
-    let mut start = Point { x: 0, y: 0 };
-    //TODO: map.find
-    for (pos, c) in map.iter() {
-        if c == b'S' {
-            start = pos;
-            break;
-        }
-    }
+    let start = map.find(b'S')[0];
+
     let mut from = [start; 2];
     let mut curr = find_exits(map, start);
     let mut distance = 1;
@@ -112,14 +106,7 @@ pub fn solve_part1(map: &Map) -> SolutionType {
 
 #[aoc(day10, part2)]
 pub fn solve_part2(map: &Map) -> SolutionType {
-    let mut start = Point { x: 0, y: 0 };
-    //TODO: map.find
-    for (pos, c) in map.iter() {
-        if c == b'S' {
-            start = pos;
-            break;
-        }
-    }
+    let start = map.find(b'S')[0];
     let mut from = start;
     let mut curr = find_exits(map, start)[0];
     let mut loop_segs = HashSet::new();

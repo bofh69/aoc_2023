@@ -335,4 +335,10 @@ impl Map {
             pos = pos.walk(Dir::East);
         }
     }
+
+    pub fn find(&self, needle: u8) -> Vec<Point> {
+        self.iter()
+            .filter_map(|(p, c)| if c == needle { Some(p) } else { None })
+            .collect()
+    }
 }
