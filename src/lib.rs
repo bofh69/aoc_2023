@@ -12,7 +12,7 @@ mod day06;
 mod day07;
 mod day08;
 mod day09;
-// mod day10;
+mod day10;
 pub mod world;
 // mod day11;
 // mod day12;
