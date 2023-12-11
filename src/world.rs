@@ -4,59 +4,104 @@
 
 type Length = i32;
 
+pub trait LengthType:
+    Signed
+    + Num
+    + Ord
+    + std::ops::AddAssign
+    + std::ops::SubAssign
+    + Copy
+    + std::fmt::Debug
+    + ToPrimitive
+{
+}
+
+impl LengthType for i16 {}
+impl LengthType for i32 {}
+impl LengthType for i64 {}
+impl LengthType for i128 {}
+
 mod dir;
 mod point;
 pub use dir::Dir;
+use num::*;
 pub use point::Point;
 
 #[derive(Debug, Clone, PartialEq, Hash)]
-pub struct Map {
+pub struct Map<T: LengthType = Length>
+where
+    usize: TryFrom<T>,
+    <usize as TryFrom<T>>::Error: std::fmt::Debug,
+{
     data: Vec<u8>,
-    width: Length,
-    height: Length,
+    width: T,
+    height: T,
     has_border: bool,
 }
 
-pub struct MapIterator<'a> {
-    map: &'a Map,
-    pos: Point,
+pub struct MapIterator<'a, T: LengthType>
+where
+    usize: TryFrom<T>,
+    <usize as TryFrom<T>>::Error: std::fmt::Debug,
+{
+    map: &'a Map<T>,
+    pos: Point<T>,
 }
 
-impl<'a> MapIterator<'a> {
-    pub fn new(map: &'a Map) -> Self {
+impl<'a, T: LengthType> MapIterator<'a, T>
+where
+    usize: TryFrom<T>,
+    <usize as TryFrom<T>>::Error: std::fmt::Debug,
+{
+    pub fn new(map: &'a Map<T>) -> Self {
         Self {
             map,
-            pos: Point { x: 0, y: 0 },
+            pos: Point::<T> {
+                x: Zero::zero(),
+                y: Zero::zero(),
+            },
         }
     }
 }
 
-impl<'a> Iterator for MapIterator<'a> {
-    type Item = (Point, u8);
+impl<'a, T: LengthType> Iterator for MapIterator<'a, T>
+where
+    usize: TryFrom<T>,
+    <usize as TryFrom<T>>::Error: std::fmt::Debug,
+{
+    type Item = (Point<T>, u8);
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.pos.x >= self.map.get_width() {
-            self.pos.x = 0;
-            self.pos.y += 1;
+            self.pos.x = Zero::zero();
+            self.pos.y += One::one();
         }
         if self.pos.y >= self.map.get_height() {
             None
         } else {
             let pos = self.pos;
-            self.pos.x += 1;
+            self.pos.x += One::one();
             Some((pos, self.map.get_at(pos)))
         }
     }
 }
 
-pub struct MapNeighborIterator<'a> {
-    map: &'a Map,
-    pos: Point,
+pub struct MapNeighborIterator<'a, T: LengthType>
+where
+    usize: TryFrom<T>,
+    <usize as TryFrom<T>>::Error: std::fmt::Debug,
+{
+    map: &'a Map<T>,
+    pos: Point<T>,
     dir: Dir,
 }
 
-impl<'a> MapNeighborIterator<'a> {
-    pub fn new(map: &'a Map, pos: Point) -> Self {
+impl<'a, T: LengthType> MapNeighborIterator<'a, T>
+where
+    usize: TryFrom<T>,
+    <usize as TryFrom<T>>::Error: std::fmt::Debug,
+{
+    pub fn new(map: &'a Map<T>, pos: Point<T>) -> Self {
         Self {
             map,
             pos,
@@ -65,8 +110,12 @@ impl<'a> MapNeighborIterator<'a> {
     }
 }
 
-impl<'a> Iterator for MapNeighborIterator<'a> {
-    type Item = (Point, Dir, u8);
+impl<'a, T: LengthType> Iterator for MapNeighborIterator<'a, T>
+where
+    usize: TryFrom<T>,
+    <usize as TryFrom<T>>::Error: std::fmt::Debug,
+{
+    type Item = (Point<T>, Dir, u8);
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
@@ -88,29 +137,33 @@ impl<'a> Iterator for MapNeighborIterator<'a> {
     }
 }
 
-impl Map {
-    pub fn get_width(&self) -> Length {
+impl<T: LengthType> Map<T>
+where
+    usize: TryFrom<T>,
+    <usize as TryFrom<T>>::Error: std::fmt::Debug,
+{
+    pub fn get_width(&self) -> T {
         self.width
     }
 
-    pub fn get_height(&self) -> Length {
+    pub fn get_height(&self) -> T {
         self.height
     }
 
-    fn get_index_for(&self, pos: Point) -> usize {
+    fn get_index_for(&self, pos: Point<T>) -> usize {
         usize::try_from(pos.x + pos.y * self.width).expect("Positive index")
     }
 
-    pub fn get_at(&self, pos: Point) -> u8 {
+    pub fn get_at(&self, pos: Point<T>) -> u8 {
         self.data[self.get_index_for(pos)]
     }
 
-    pub fn set_at(&mut self, pos: Point, val: u8) {
+    pub fn set_at(&mut self, pos: Point<T>, val: u8) {
         let index = self.get_index_for(pos);
         self.data[index] = val
     }
 
-    pub fn new(width: Length, height: Length) -> Self {
+    pub fn new(width: T, height: T) -> Self {
         let mut data =
             Vec::with_capacity(usize::try_from(width * height).expect("Positive number"));
         data.resize_with(
@@ -125,7 +178,11 @@ impl Map {
         }
     }
 
-    pub fn from_string(s: &str) -> Self {
+    pub fn from_string(s: &str) -> Self
+    where
+        T: TryFrom<usize>,
+        <T as TryFrom<usize>>::Error: std::fmt::Debug,
+    {
         let height = s.lines().count();
         let width = s.lines().next().expect("At least one line").len();
         let mut data = Vec::with_capacity(height * width);
@@ -135,8 +192,8 @@ impl Map {
             }
         }
 
-        let width = Length::try_from(width).expect("Positive width");
-        let height = Length::try_from(height).expect("Positive height");
+        let width = T::try_from(width).expect("Positive width");
+        let height = T::try_from(height).expect("Positive height");
         Self {
             data,
             width,
@@ -145,7 +202,11 @@ impl Map {
         }
     }
 
-    pub fn from_string_with_border(s: &str) -> Self {
+    pub fn from_string_with_border(s: &str) -> Self
+    where
+        T: TryFrom<usize>,
+        <T as TryFrom<usize>>::Error: std::fmt::Debug,
+    {
         let height = s.lines().count() + 2;
         let width = s.lines().next().expect("At least one line").len() + 2;
         let mut data = Vec::with_capacity(height * width);
@@ -170,8 +231,8 @@ impl Map {
         }
         data.push(b'+');
 
-        let width = Length::try_from(width).expect("Positive width");
-        let height = Length::try_from(height).expect("Positive height");
+        let width = T::try_from(width).expect("Positive width");
+        let height = T::try_from(height).expect("Positive height");
         Self {
             data,
             width,
@@ -182,10 +243,10 @@ impl Map {
 
     pub fn print_with_overlay<F>(&self, mut f: F)
     where
-        F: FnMut(Point, u8) -> Option<u8>,
+        F: FnMut(Point<T>, u8) -> Option<u8>,
     {
-        for y in 0..self.height {
-            for x in 0..self.width {
+        for y in range(Zero::zero(), self.height) {
+            for x in range(Zero::zero(), self.width) {
                 let pos = Point { x, y };
                 let mut c = self.get_at(pos);
                 if let Some(new_c) = f(pos, c) {
@@ -201,17 +262,17 @@ impl Map {
         self.print_with_overlay(|_, _| None);
     }
 
-    pub fn iter(&self) -> MapIterator {
+    pub fn iter(&self) -> MapIterator<T> {
         MapIterator::new(self)
     }
 
-    pub fn neighbors(&self, pos: Point) -> MapNeighborIterator {
+    pub fn neighbors(&self, pos: Point<T>) -> MapNeighborIterator<T> {
         MapNeighborIterator::new(self, pos)
     }
 
-    pub fn transform_area<F>(&mut self, from: Point, to: Point, mut f: F)
+    pub fn transform_area<F>(&mut self, from: Point<T>, to: Point<T>, mut f: F)
     where
-        F: FnMut(&Self, Point, u8) -> u8,
+        F: FnMut(&Self, Point<T>, u8) -> u8,
     {
         let mut new_map = Map::new(self.width, self.height);
         for (pos, c) in self.iter() {
@@ -228,21 +289,27 @@ impl Map {
 
     pub fn transform<F>(&mut self, f: F)
     where
-        F: FnMut(&Self, Point, u8) -> u8,
+        F: FnMut(&Self, Point<T>, u8) -> u8,
     {
         if self.has_border {
             self.transform_area(
-                Point { x: 1, y: 1 },
-                Point {
-                    x: self.width - 1,
-                    y: self.height - 1,
+                Point::<T> {
+                    x: One::one(),
+                    y: One::one(),
+                },
+                Point::<T> {
+                    x: self.width - One::one(),
+                    y: self.height - One::one(),
                 },
                 f,
             )
         } else {
             self.transform_area(
-                Point { x: 0, y: 0 },
-                Point {
+                Point::<T> {
+                    x: Zero::zero(),
+                    y: Zero::zero(),
+                },
+                Point::<T> {
                     x: self.width,
                     y: self.height,
                 },
@@ -251,17 +318,20 @@ impl Map {
         }
     }
 
-    pub fn is_inside_map(&self, pos: Point) -> bool {
-        pos.x >= 0 && pos.y >= 0 && pos.x < self.get_width() && pos.y < self.get_height()
+    pub fn is_inside_map(&self, pos: Point<T>) -> bool {
+        pos.x >= Zero::zero()
+            && pos.y >= Zero::zero()
+            && pos.x < self.get_width()
+            && pos.y < self.get_height()
     }
 
     /// moves pos in dir
     ///
     /// It stops when the next point in that direction is outside of the map or causes f to return
     /// false
-    pub fn walk_until<F>(&self, pos: Point, dir: Dir, mut f: F) -> Point
+    pub fn walk_until<F>(&self, pos: Point<T>, dir: Dir, mut f: F) -> Point<T>
     where
-        F: FnMut(Point, u8) -> bool,
+        F: FnMut(Point<T>, u8) -> bool,
     {
         let mut pos = pos;
         loop {
@@ -276,7 +346,7 @@ impl Map {
 
     /// flood fill the map from point pos with val
     /// Only fills north, south, east and west of each position
-    pub fn flood_cardinal(&mut self, pos: Point, empty: u8, val: u8) {
+    pub fn flood_cardinal(&mut self, pos: Point<T>, empty: u8, val: u8) {
         if self.get_at(pos) != empty {
             // Nothing to fill here
             return;
@@ -291,22 +361,22 @@ impl Map {
         }
         pos = min_pos;
         while pos.x <= max_pos.x {
-            pos.y -= 1;
-            if pos.y > 0 {
+            pos.y -= One::one();
+            if pos.y > Zero::zero() {
                 self.flood_cardinal(pos, empty, val);
             }
-            pos.y += 2;
+            pos.y = pos.y + One::one() + One::one();
             if pos.y < self.get_height() {
                 self.flood_cardinal(pos, empty, val);
             }
-            pos.y -= 1;
+            pos.y -= One::one();
             pos = pos.walk(Dir::East);
         }
     }
 
-    pub fn flood_cardinal_with<F>(&mut self, pos: Point, f: &mut F)
+    pub fn flood_cardinal_with<F>(&mut self, pos: Point<T>, f: &mut F)
     where
-        F: FnMut(Point, u8) -> Option<u8>,
+        F: FnMut(Point<T>, u8) -> Option<u8>,
     {
         if f(pos, self.get_at(pos)).is_none() {
             // Nothing to fill here
@@ -323,20 +393,20 @@ impl Map {
         }
         pos = min_pos;
         while pos.x <= max_pos.x {
-            pos.y -= 1;
-            if pos.y >= 0 {
+            pos.y -= One::one();
+            if pos.y >= Zero::zero() {
                 self.flood_cardinal_with(pos, f);
             }
-            pos.y += 2;
+            pos.y = pos.y + One::one() + One::one();
             if pos.y < self.get_height() {
                 self.flood_cardinal_with(pos, f);
             }
-            pos.y -= 1;
+            pos.y -= One::one();
             pos = pos.walk(Dir::East);
         }
     }
 
-    pub fn find(&self, needle: u8) -> Vec<Point> {
+    pub fn find(&self, needle: u8) -> Vec<Point<T>> {
         self.iter()
             .filter_map(|(p, c)| if c == needle { Some(p) } else { None })
             .collect()
