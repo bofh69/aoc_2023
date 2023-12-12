@@ -105,9 +105,133 @@ pub fn solve_part1(data: &[InputType]) -> SolutionType {
         .sum()
 }
 
+use std::collections::HashMap;
+
+fn count_arrangements<'a>(
+    cache: &mut HashMap<(bool, u8, &'a [u8], u8, &'a [u8]), SolutionType>,
+    is_inside_group: bool,
+    current_spring: u8,
+    springs: &'a [u8],
+    left: u8,
+    next_groups: &'a [u8],
+) -> SolutionType {
+    let key = (is_inside_group, current_spring, springs, left, next_groups);
+    if let Some(result) = cache.get(&key) {
+        return *result;
+    }
+    let result = count_arrangements_(
+        cache,
+        is_inside_group,
+        current_spring,
+        springs,
+        left,
+        next_groups,
+    );
+    cache.insert(key, result);
+
+    result
+}
+
+fn count_arrangements_<'a>(
+    cache: &mut HashMap<(bool, u8, &'a [u8], u8, &'a [u8]), SolutionType>,
+    is_inside_group: bool,
+    current_spring: u8,
+    springs: &'a [u8],
+    left: u8,
+    next_groups: &'a [u8],
+) -> SolutionType {
+    if springs.len() == 0 {
+        return match (is_inside_group, current_spring) {
+            (_, b'?') => {
+                count_arrangements_(cache, is_inside_group, b'#', springs, left, next_groups)
+                    + count_arrangements_(cache, is_inside_group, b'.', springs, left, next_groups)
+            }
+            (true, b'#') => {
+                if left == 0 {
+                    0
+                } else if left == 1 && next_groups.len() == 0 {
+                    1
+                } else {
+                    0
+                }
+            }
+            (true, b'.') => {
+                if left == 0 && next_groups.len() == 0 {
+                    1
+                } else {
+                    0
+                }
+            }
+            (false, b'#') => {
+                if next_groups.len() == 1 && next_groups[0] == 1 {
+                    1
+                } else {
+                    0
+                }
+            }
+            (false, b'.') => {
+                if next_groups.len() == 0 {
+                    1
+                } else {
+                    0
+                }
+            }
+            _ => unreachable!(),
+        };
+    }
+    match (is_inside_group, current_spring) {
+        (true, b'?') => {
+            count_arrangements(cache, is_inside_group, b'#', springs, left, next_groups)
+                + count_arrangements(cache, is_inside_group, b'.', springs, left, next_groups)
+        }
+        (false, b'?') => {
+            count_arrangements_(cache, is_inside_group, b'#', springs, left, next_groups)
+                + count_arrangements_(cache, is_inside_group, b'.', springs, left, next_groups)
+        }
+        (true, b'#') => {
+            if left == 0 {
+                0
+            } else {
+                count_arrangements(
+                    cache,
+                    is_inside_group,
+                    springs[0],
+                    &springs[1..],
+                    left - 1,
+                    next_groups,
+                )
+            }
+        }
+        (true, b'.') => {
+            if left != 0 {
+                0
+            } else {
+                count_arrangements(cache, false, springs[0], &springs[1..], 0, next_groups)
+            }
+        }
+        (false, b'#') => {
+            if next_groups.len() == 0 {
+                0
+            } else {
+                count_arrangements(
+                    cache,
+                    true,
+                    springs[0],
+                    &springs[1..],
+                    next_groups[0] - 1,
+                    &next_groups[1..],
+                )
+            }
+        }
+        (false, b'.') => {
+            count_arrangements_(cache, false, springs[0], &springs[1..], 0, next_groups)
+        }
+        _ => unreachable!(),
+    }
+}
+
 #[aoc(day12, part2)]
 pub fn solve_part2(data: &[InputType]) -> SolutionType {
-    let mut scratch = vec![];
     data.iter()
         .map(|(spring, group)| {
             let mut spring2 = vec![];
@@ -129,46 +253,8 @@ pub fn solve_part2(data: &[InputType]) -> SolutionType {
             (spring2, groups2)
         })
         .map(|(springs, groups)| {
-            let mut arrangements = 0;
-            let unknowns = springs.iter().filter(|c| **c == b'?').count();
-            if unknowns == 0 {
-                if is_valid(&springs, &groups) {
-                    arrangements = 1;
-                }
-            } else {
-                for num in 0..(1u128 << unknowns) {
-                    let mut num = num;
-                    scratch.clear();
-                    for c in &springs {
-                        scratch.push(if *c == b'?' {
-                            let c = if num & 1 == 1 { b'#' } else { b'.' };
-                            num >>= 1u128;
-                            c
-                        } else {
-                            *c
-                        });
-                    }
-                    /*
-                    print!("Testing: ");
-                    for c in &scratch {
-                        print!("{}", *c as char);
-                    }
-                    println!(" {:?}", groups);
-                    */
-                    if is_valid(&scratch, &groups) {
-                        /*
-                        print!("VALID: ");
-                        for c in &scratch {
-                            print!("{}", *c as char);
-                        }
-                        println!();
-                        */
-                        arrangements += 1;
-                    }
-                }
-            }
-            // println!("{:?} - {} arrangements", springs, arrangements);
-            arrangements
+            let mut cache = HashMap::new();
+            count_arrangements(&mut cache, false, springs[0], &springs[1..], 0, &groups)
         })
         .sum()
 }
