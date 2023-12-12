@@ -14,8 +14,7 @@ mod day08;
 mod day09;
 mod day10;
 mod day11;
-pub mod world;
-// mod day12;
+mod day12;
 // mod day13;
 // mod day14;
 // mod day15;
@@ -29,5 +28,6 @@ pub mod world;
 // mod day23;
 // mod day24;
 // mod day25;
+pub mod world;
 
 aoc_lib! { year = 2023 }
