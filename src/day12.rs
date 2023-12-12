@@ -140,7 +140,7 @@ fn count_arrangements_<'a>(
     left: u8,
     next_groups: &'a [u8],
 ) -> SolutionType {
-    if springs.len() == 0 {
+    if springs.is_empty() {
         return match (is_inside_group, current_spring) {
             (_, b'?') => {
                 count_arrangements_(cache, is_inside_group, b'#', springs, left, next_groups)
@@ -149,14 +149,14 @@ fn count_arrangements_<'a>(
             (true, b'#') => {
                 if left == 0 {
                     0
-                } else if left == 1 && next_groups.len() == 0 {
+                } else if left == 1 && next_groups.is_empty() {
                     1
                 } else {
                     0
                 }
             }
             (true, b'.') => {
-                if left == 0 && next_groups.len() == 0 {
+                if left == 0 && next_groups.is_empty() {
                     1
                 } else {
                     0
@@ -170,7 +170,7 @@ fn count_arrangements_<'a>(
                 }
             }
             (false, b'.') => {
-                if next_groups.len() == 0 {
+                if next_groups.is_empty() {
                     1
                 } else {
                     0
@@ -210,7 +210,7 @@ fn count_arrangements_<'a>(
             }
         }
         (false, b'#') => {
-            if next_groups.len() == 0 {
+            if next_groups.is_empty() {
                 0
             } else {
                 count_arrangements(
