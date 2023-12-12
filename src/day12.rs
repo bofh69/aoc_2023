@@ -4,6 +4,9 @@
 
 use aoc_runner_derive::{aoc, aoc_generator};
 
+use rayon::prelude::*;
+use std::collections::HashMap;
+
 type InputType = (Vec<u8>, Vec<u8>);
 type SolutionType = usize;
 
@@ -105,10 +108,10 @@ pub fn solve_part1(data: &[InputType]) -> SolutionType {
         .sum()
 }
 
-use std::collections::HashMap;
+type HashKey<'a> = (bool, u8, &'a [u8], u8, &'a [u8]);
 
 fn count_arrangements<'a>(
-    cache: &mut HashMap<(bool, u8, &'a [u8], u8, &'a [u8]), SolutionType>,
+    cache: &mut HashMap<HashKey<'a>, SolutionType>,
     is_inside_group: bool,
     current_spring: u8,
     springs: &'a [u8],
@@ -133,7 +136,7 @@ fn count_arrangements<'a>(
 }
 
 fn count_arrangements_<'a>(
-    cache: &mut HashMap<(bool, u8, &'a [u8], u8, &'a [u8]), SolutionType>,
+    cache: &mut HashMap<HashKey<'a>, SolutionType>,
     is_inside_group: bool,
     current_spring: u8,
     springs: &'a [u8],
@@ -232,7 +235,7 @@ fn count_arrangements_<'a>(
 
 #[aoc(day12, part2)]
 pub fn solve_part2(data: &[InputType]) -> SolutionType {
-    data.iter()
+    data.par_iter()
         .map(|(spring, group)| {
             let mut spring2 = vec![];
             spring2.extend_from_slice(spring);
