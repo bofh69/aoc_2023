@@ -38,10 +38,8 @@ pub fn solve_part1(data: &[InputType]) -> SolutionType {
                             x: 2 * (i + 1) - x - 1,
                             y,
                         };
-                        if to.x > i && to.x < width {
-                            if map.get_at(from) != map.get_at(to) {
-                                continue 'next_col;
-                            }
+                        if to.x > i && to.x < width && map.get_at(from) != map.get_at(to) {
+                            continue 'next_col;
                         }
                     }
                 }
@@ -56,10 +54,8 @@ pub fn solve_part1(data: &[InputType]) -> SolutionType {
                             y: 2 * (i + 1) - y - 1,
                             x,
                         };
-                        if to.y > i && to.y < height {
-                            if map.get_at(from) != map.get_at(to) {
-                                continue 'next_row;
-                            }
+                        if to.y > i && to.y < height && map.get_at(from) != map.get_at(to) {
+                            continue 'next_row;
                         }
                     }
                 }
@@ -90,13 +86,11 @@ pub fn solve_part2(data: &[InputType]) -> SolutionType {
                             x: 2 * (i + 1) - x - 1,
                             y,
                         };
-                        if to.x > i && to.x < width {
-                            if map.get_at(from) != map.get_at(to) {
-                                smudges += 1;
-                                // first_smudge = from;
-                                if smudges > 1 {
-                                    continue 'next_col;
-                                }
+                        if to.x > i && to.x < width && map.get_at(from) != map.get_at(to) {
+                            smudges += 1;
+                            // first_smudge = from;
+                            if smudges > 1 {
+                                continue 'next_col;
                             }
                         }
                     }
@@ -116,13 +110,11 @@ pub fn solve_part2(data: &[InputType]) -> SolutionType {
                             y: 2 * (i + 1) - y - 1,
                             x,
                         };
-                        if to.y > i && to.y < height {
-                            if map.get_at(from) != map.get_at(to) {
-                                smudges += 1;
-                                // first_smudge = from;
-                                if smudges > 1 {
-                                    continue 'next_row;
-                                }
+                        if to.y > i && to.y < height && map.get_at(from) != map.get_at(to) {
+                            smudges += 1;
+                            // first_smudge = from;
+                            if smudges > 1 {
+                                continue 'next_row;
                             }
                         }
                     }
