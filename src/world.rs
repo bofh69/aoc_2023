@@ -13,6 +13,7 @@ pub trait LengthType:
     + Copy
     + std::fmt::Debug
     + ToPrimitive
+    + std::hash::Hash
 {
 }
 
@@ -26,6 +27,25 @@ mod point;
 pub use dir::Dir;
 use num::*;
 pub use point::Point;
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+struct CostAndPoint<T: LengthType, U: Num>(U, Point<T>);
+
+impl<T: LengthType + PartialOrd + Eq + PartialEq, U: Num + Ord + PartialOrd + Eq + PartialEq> Ord
+    for CostAndPoint<T, U>
+{
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        other.0.cmp(&self.0)
+    }
+}
+
+impl<T: LengthType + PartialOrd + Eq + PartialEq, U: Num + Ord + PartialOrd + Eq + PartialEq>
+    PartialOrd for CostAndPoint<T, U>
+{
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(other.0.cmp(&self.0))
+    }
+}
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Map<T: LengthType = Length>
@@ -416,5 +436,32 @@ where
         self.iter()
             .filter_map(|(p, c)| if c == needle { Some(p) } else { None })
             .collect()
+    }
+
+    pub fn bfs<F, U>(&self, from: Point<T>, to: Point<T>, f: &mut F) -> U
+    where
+        F: FnMut(&Self, Point<T>, Dir, u8) -> Option<U>,
+        U: Num + Ord + Copy + std::fmt::Debug,
+    {
+        // TODO: Give path instead?
+        let mut expanded = std::collections::HashSet::new();
+        let mut to_expand = std::collections::BinaryHeap::new();
+        to_expand.push(CostAndPoint(Zero::zero(), from));
+        while let Some(CostAndPoint(steps, pos)) = to_expand.pop() {
+            if expanded.contains(&pos) {
+                continue;
+            }
+            expanded.insert(pos);
+            if to == pos {
+                return steps;
+            }
+            for (new_steps, pos) in self
+                .neighbors(pos)
+                .filter_map(|(pos, dir, c)| f(self, pos, dir, c).map(|step| (step + steps, pos)))
+            {
+                to_expand.push(CostAndPoint(new_steps, pos));
+            }
+        }
+        Zero::zero()
     }
 }
