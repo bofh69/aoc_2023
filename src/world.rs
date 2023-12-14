@@ -27,7 +27,7 @@ pub use dir::Dir;
 use num::*;
 pub use point::Point;
 
-#[derive(Debug, Clone, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Map<T: LengthType = Length>
 where
     usize: TryFrom<T>,
@@ -270,14 +270,19 @@ where
         MapNeighborIterator::new(self, pos)
     }
 
-    pub fn transform_area<F>(&mut self, from: Point<T>, to: Point<T>, mut f: F)
+    pub fn transform_area<F>(&mut self, from: Point<T>, to: Point<T>, mut f: F) -> bool
     where
         F: FnMut(&Self, Point<T>, u8) -> u8,
     {
         let mut new_map = Map::new(self.width, self.height);
+        let mut any_change = false;
         for (pos, c) in self.iter() {
             if pos.x >= from.x && pos.y >= from.y && pos.x < to.x && pos.y < to.y {
-                new_map.set_at(pos, f(self, pos, c));
+                let new_c = f(self, pos, c);
+                if new_c != c {
+                    any_change = true;
+                }
+                new_map.set_at(pos, new_c);
             }
         }
         for (pos, c) in new_map.iter() {
@@ -285,9 +290,10 @@ where
                 self.set_at(pos, c);
             }
         }
+        any_change
     }
 
-    pub fn transform<F>(&mut self, f: F)
+    pub fn transform<F>(&mut self, f: F) -> bool
     where
         F: FnMut(&Self, Point<T>, u8) -> u8,
     {
