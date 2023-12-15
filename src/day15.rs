@@ -15,56 +15,61 @@ pub fn input_generator(input: &str) -> Vec<InputType> {
     input.split(',').map(|s| s.to_string()).collect()
 }
 
+fn get_hash(s: &str) -> u8 {
+    s.as_bytes().iter().fold(0u8, |acc, c| {
+        acc.overflowing_add(*c).0.overflowing_mul(17).0
+    })
+}
+
 #[aoc(day15, part1)]
 pub fn solve_part1(data: &[InputType]) -> SolutionType {
     data.iter()
-        .map(|s| {
-            s.as_bytes().iter().fold(0u8, |acc, c| {
-                acc.overflowing_add(*c).0.overflowing_mul(17).0
-            })
-        })
-        .map(|n| SolutionType::from(n))
+        .map(|s| get_hash(s))
+        .map(SolutionType::from)
         .sum()
 }
 
 #[aoc(day15, part2)]
-pub fn solve_part2(_data: &[InputType]) -> SolutionType {
-    let mut boxes : Vec<Vec<(u8, u8)>> = Vec::new();
+pub fn solve_part2(data: &[InputType]) -> SolutionType {
+    let mut boxes: Vec<Vec<(&str, &str)>> = Vec::new();
     for _i in 0..256 {
         boxes.push(Vec::new());
     }
-    /*
-    let labels: Vec<_> = data
-        .iter()
-        .map(|s| {
-            s.as_bytes().iter()
-                .take_while(|&&c| c != b'-' && c != b'=')
-                .fold(0u8, |acc, &c| {
-                acc.overflowing_add(c).0.overflowing_mul(17).0
-            })
-        })
-        .map(|n| usize::from(n))
-        .collect();
 
-    let focals: Vec<Option<u8>> = data
-        .iter()
-        .map(|s| {
-            if let Some((_, n)) = s.split_once('=') {
-                Some(n.parse().expect("number"))
-            } else {
-                None
+    'instr: for instr in data {
+        if let Some((label, focal)) = instr.split_once('=') {
+            let hash = get_hash(label);
+            let b = &mut boxes[hash as usize];
+            for entry in b.iter_mut() {
+                if entry.0 == label {
+                    entry.1 = focal;
+                    continue 'instr;
+                }
             }
-        })
-        .collect();
-
-    for (i, &_label) in labels.iter().enumerate() {
-        if let Some(_n) = focals[i] {
-            // Update in place or add at end
+            b.push((label, focal));
         } else {
-            // Remove
+            let label = instr.split_once('-').expect("label").0;
+            let hash = get_hash(label);
+            let b = &mut boxes[hash as usize];
+            for i in 0..b.len() {
+                if b[i].0 == label {
+                    b.remove(i);
+                    break;
+                }
+            }
         }
     }
-    println!("{:?} {:?}", labels, focals);
-    */
-    0
+
+    boxes
+        .iter()
+        .enumerate()
+        .map(|(boxnr, cont)| {
+            cont.iter()
+                .enumerate()
+                .map(|(index, (_label, focus))| {
+                    usize::from(focus.as_bytes()[0] - b'0') * (boxnr + 1) * (index + 1)
+                })
+                .sum::<SolutionType>()
+        })
+        .sum()
 }
