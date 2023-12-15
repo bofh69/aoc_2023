@@ -56,13 +56,13 @@ pub fn solve_part1(map: &Map) -> SolutionType {
 }
 
 fn add_number(numbers: &mut Vec<SolutionType>, map: &Map, pos: Point) {
-    if !char::from(map.get_at(pos)).is_ascii_digit() {
+    if !char::from(map.get_at_unchecked(pos)).is_ascii_digit() {
         return;
     }
     let mut pos = map.walk_until(pos, Dir::West, |_, c| !char::from(c).is_ascii_digit());
     let mut sum = 0;
-    while map.is_inside_map(pos) && char::from(map.get_at(pos)).is_ascii_digit() {
-        sum = sum * 10 + SolutionType::from(map.get_at(pos) - b'0');
+    while map.is_inside_map(pos) && char::from(map.get_at_unchecked(pos)).is_ascii_digit() {
+        sum = sum * 10 + SolutionType::from(map.get_at_unchecked(pos) - b'0');
         pos = pos.walk(Dir::East);
     }
     numbers.push(sum as SolutionType);
@@ -78,7 +78,7 @@ pub fn solve_part2(map: &Map) -> SolutionType {
             add_number(&mut numbers, map, pos.walk(Dir::West));
             add_number(&mut numbers, map, pos.walk(Dir::East));
             if pos.y > 0 {
-                if char::from(map.get_at(pos.walk(Dir::North))).is_ascii_digit() {
+                if char::from(map.get_at_unchecked(pos.walk(Dir::North))).is_ascii_digit() {
                     add_number(&mut numbers, map, pos.walk(Dir::North));
                 } else {
                     add_number(&mut numbers, map, pos.walk(Dir::NorthWest));
@@ -86,7 +86,7 @@ pub fn solve_part2(map: &Map) -> SolutionType {
                 }
             }
             if pos.y < map.get_height() - 1 {
-                if char::from(map.get_at(pos.walk(Dir::South))).is_ascii_digit() {
+                if char::from(map.get_at_unchecked(pos.walk(Dir::South))).is_ascii_digit() {
                     add_number(&mut numbers, map, pos.walk(Dir::South));
                 } else {
                     add_number(&mut numbers, map, pos.walk(Dir::SouthWest));

@@ -33,7 +33,7 @@ fn is_right(c: u8) -> bool {
 fn find_exits(map: &Map, from: Point) -> [Point; 2] {
     let mut result = [from; 2];
     let mut idx = 0;
-    let from_c = map.get_at(from);
+    let from_c = map.get_at_unchecked(from);
     for (pos, dir, c) in map.neighbors(from) {
         if match (dir, c) {
             (Dir::North, b'|') => is_up(from_c),

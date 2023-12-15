@@ -19,12 +19,12 @@ fn tilt(map: &mut Map, from: Dir, to: Dir) {
     let slide_o = |map: &Map, pos: Point, c| {
         match c {
             b'.' => {
-                if map.get_at(pos.walk(from)) == b'O' {
+                if map.get_at_unchecked(pos.walk(from)) == b'O' {
                     return b'O';
                 }
             }
             b'O' => {
-                if map.get_at(pos.walk(to)) == b'.' {
+                if map.get_at_unchecked(pos.walk(to)) == b'.' {
                     return b'.';
                 }
             }

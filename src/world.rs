@@ -101,7 +101,7 @@ where
         } else {
             let pos = self.pos;
             self.pos.x += One::one();
-            Some((pos, self.map.get_at(pos)))
+            Some((pos, self.map.get_at_unchecked(pos)))
         }
     }
 }
@@ -150,7 +150,7 @@ where
 
                 let pos = self.pos.walk(dir);
                 if self.map.is_inside_map(pos) {
-                    return Some((pos, dir, self.map.get_at(pos)));
+                    return Some((pos, dir, self.map.get_at_unchecked(pos)));
                 }
             }
         }
@@ -174,7 +174,7 @@ where
         usize::try_from(pos.x + pos.y * self.width).expect("Positive index")
     }
 
-    pub fn get_at(&self, pos: Point<T>) -> u8 {
+    pub fn get_at_unchecked(&self, pos: Point<T>) -> u8 {
         self.data[self.get_index_for(pos)]
     }
 
@@ -268,7 +268,7 @@ where
         for y in range(Zero::zero(), self.height) {
             for x in range(Zero::zero(), self.width) {
                 let pos = Point { x, y };
-                let mut c = self.get_at(pos);
+                let mut c = self.get_at_unchecked(pos);
                 if let Some(new_c) = f(pos, c) {
                     c = new_c;
                 }
@@ -362,7 +362,7 @@ where
         let mut pos = pos;
         loop {
             let new_pos = pos.walk(dir);
-            if !self.is_inside_map(new_pos) || f(new_pos, self.get_at(new_pos)) {
+            if !self.is_inside_map(new_pos) || f(new_pos, self.get_at_unchecked(new_pos)) {
                 break;
             }
             pos = new_pos;
@@ -373,7 +373,7 @@ where
     /// flood fill the map from point pos with val
     /// Only fills north, south, east and west of each position
     pub fn flood_cardinal(&mut self, pos: Point<T>, empty: u8, val: u8) {
-        if self.get_at(pos) != empty {
+        if self.get_at_unchecked(pos) != empty {
             // Nothing to fill here
             return;
         }
@@ -404,7 +404,7 @@ where
     where
         F: FnMut(Point<T>, u8) -> Option<u8>,
     {
-        if f(pos, self.get_at(pos)).is_none() {
+        if f(pos, self.get_at_unchecked(pos)).is_none() {
             // Nothing to fill here
             return;
         }
@@ -413,7 +413,7 @@ where
 
         let mut pos = min_pos;
         while pos.x <= max_pos.x {
-            let val = f(pos, self.get_at(pos)).expect("value");
+            let val = f(pos, self.get_at_unchecked(pos)).expect("value");
             self.set_at(pos, val);
             pos = pos.walk(Dir::East);
         }
