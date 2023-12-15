@@ -178,6 +178,14 @@ where
         self.data[self.get_index_for(pos)]
     }
 
+    pub fn get_at(&self, pos: Point<T>) -> Option<u8> {
+        if self.is_inside_map(pos) {
+            Some(self.data[self.get_index_for(pos)])
+        } else {
+            None
+        }
+    }
+
     pub fn set_at(&mut self, pos: Point<T>, val: u8) {
         let index = self.get_index_for(pos);
         self.data[index] = val
