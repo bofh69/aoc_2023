@@ -15,18 +15,15 @@ pub fn input_generator(input: &str) -> Vec<InputType> {
     input.split(',').map(|s| s.to_string()).collect()
 }
 
-fn get_hash(s: &str) -> u8 {
-    s.as_bytes().iter().fold(0u8, |acc, c| {
+fn get_hash<S: AsRef<str>>(s: S) -> u8 {
+    s.as_ref().as_bytes().iter().fold(0u8, |acc, c| {
         acc.overflowing_add(*c).0.overflowing_mul(17).0
     })
 }
 
 #[aoc(day15, part1)]
 pub fn solve_part1(data: &[InputType]) -> SolutionType {
-    data.iter()
-        .map(|s| get_hash(s))
-        .map(SolutionType::from)
-        .sum()
+    data.iter().map(get_hash).map(SolutionType::from).sum()
 }
 
 #[aoc(day15, part2)]
