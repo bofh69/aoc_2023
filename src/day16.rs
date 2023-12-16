@@ -5,8 +5,8 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
 use super::world::*;
-use std::collections::HashSet;
 use rayon::prelude::*;
+use std::collections::HashSet;
 
 type SolutionType = usize;
 
@@ -15,11 +15,16 @@ pub fn input_generator(input: &str) -> Map {
     Map::from_string(input)
 }
 
-fn add_light(moving_lights: &mut HashSet<(Point, Dir)>, to_expand: &mut Vec<(Point, Dir)>, map: &Map, pos: Point, dir: Dir) {
-        if map.is_inside_map(pos) && !moving_lights.contains(&(pos, dir)) {
-            moving_lights.insert((pos, dir));
-            to_expand.push((pos, dir));
-        }
+fn add_light(
+    moving_lights: &mut HashSet<(Point, Dir)>,
+    to_expand: &mut Vec<(Point, Dir)>,
+    map: &Map,
+    pos: Point,
+    dir: Dir,
+) {
+    if map.is_inside_map(pos) && moving_lights.insert((pos, dir)) {
+        to_expand.push((pos, dir));
+    }
 }
 
 fn calculate_energize(map: &Map, start: Point, dir: Dir) -> SolutionType {
@@ -31,33 +36,36 @@ fn calculate_energize(map: &Map, start: Point, dir: Dir) -> SolutionType {
 
     add_light(&mut moving_lights, &mut to_expand, map, start, dir);
 
-    while let Some((pos, dir)) = to_expand.pop() {
-        energized.insert(pos);
-        let c = map.get_at_unchecked(pos);
-        match (c, dir) {
-            (b'-', East | West) | (b'|', North | South) | (b'.', _) => {
-                let pos = pos.walk(dir);
-                add_light(&mut moving_lights, &mut to_expand, map, pos, dir);
+    while let Some((mut pos, mut dir)) = to_expand.pop() {
+        loop {
+            energized.insert(pos);
+            let c = map.get_at_unchecked(pos);
+            match (c, dir) {
+                (b'-', East | West) | (b'|', North | South) | (b'.', _) => {
+                    pos = pos.walk(dir);
+                }
+                (b'/', East | West) | (b'\\', North | South) => {
+                    dir = dir.turn_left().turn_left();
+                    pos = pos.walk(dir);
+                }
+                (b'\\', East | West) | (b'/', North | South) => {
+                    dir = dir.turn_right().turn_right();
+                    pos = pos.walk(dir);
+                }
+                (b'-', North | South) | (b'|', East | West) => {
+                    let dir1 = dir.turn_left().turn_left();
+                    let pos1 = pos.walk(dir1);
+                    add_light(&mut moving_lights, &mut to_expand, map, pos1, dir1);
+                    dir = dir.turn_right().turn_right();
+                    pos = pos.walk(dir);
+                }
+                x => unreachable!("{:?}", x),
             }
-            (b'/', East | West) | (b'\\', North | South) => {
-                let dir = dir.turn_left().turn_left();
-                let pos = pos.walk(dir);
-                add_light(&mut moving_lights, &mut to_expand, map, pos, dir);
+            if map.is_inside_map(pos) && moving_lights.insert((pos, dir)) {
+                // The ray is still relevant
+            } else {
+                break;
             }
-            (b'\\', East | West) | (b'/', North | South) => {
-                let dir = dir.turn_right().turn_right();
-                let pos = pos.walk(dir);
-                add_light(&mut moving_lights, &mut to_expand, map, pos, dir);
-            }
-            (b'-', North | South) | (b'|', East | West) => {
-                let dir1 = dir.turn_left().turn_left();
-                let dir2 = dir.turn_right().turn_right();
-                let pos1 = pos.walk(dir1);
-                let pos2 = pos.walk(dir2);
-                add_light(&mut moving_lights, &mut to_expand, map, pos1, dir1);
-                add_light(&mut moving_lights, &mut to_expand, map, pos2, dir2);
-            }
-            x => unreachable!("{:?}", x),
         }
     }
     energized.len()
