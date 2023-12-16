@@ -456,10 +456,9 @@ where
         let mut to_expand = std::collections::BinaryHeap::new();
         to_expand.push(CostAndPoint(Zero::zero(), from));
         while let Some(CostAndPoint(steps, pos)) = to_expand.pop() {
-            if expanded.contains(&pos) {
+            if !expanded.insert(pos) {
                 continue;
             }
-            expanded.insert(pos);
             if to == pos {
                 return steps;
             }
