@@ -6,7 +6,7 @@ use aoc_runner_derive::{aoc, aoc_generator};
 
 use super::world::*;
 use std::collections::HashSet;
-// use rayon::prelude::*;
+use rayon::prelude::*;
 
 type SolutionType = usize;
 
@@ -71,6 +71,7 @@ pub fn solve_part1(map: &Map) -> SolutionType {
 #[aoc(day16, part2)]
 pub fn solve_part2(map: &Map) -> SolutionType {
     let e1 = (0..map.get_width())
+        .into_par_iter()
         .map(|x| {
             let e1 = calculate_energize(map, Point { x, y: 0 }, Dir::South);
             let e2 = calculate_energize(
@@ -86,6 +87,7 @@ pub fn solve_part2(map: &Map) -> SolutionType {
         .max()
         .expect("Number");
     let e2 = (0..map.get_height())
+        .into_par_iter()
         .map(|y| {
             let e1 = calculate_energize(map, Point { x: 0, y }, Dir::East);
             let e2 = calculate_energize(
