@@ -37,13 +37,14 @@ fn bfs(map: &Map, from: Point, to: Point) -> SolutionType {
     to_expand.push(CostAndPoint(0, 1, from.walk(Dir::East), Dir::East));
     to_expand.push(CostAndPoint(0, 1, from.walk(Dir::South), Dir::South));
     while let Some(CostAndPoint(mut heat_loss, steps, pos, dir)) = to_expand.pop() {
-        if let Some(&cost) = expanded.get(&(steps, pos, dir)) {
-            if cost <= heat_loss {
+        if let Some(cost) = expanded.get_mut(&(steps, pos, dir)) {
+            if *cost <= heat_loss {
                 continue;
             }
+            *cost = heat_loss;
+        } else {
+            expanded.insert((steps, pos, dir), heat_loss);
         }
-        expanded.insert((steps, pos, dir), heat_loss);
-        // println!("Walking from {:?} {:?} ({} steps)", pos, dir, steps);
         heat_loss += SolutionType::from(map.get_at_unchecked(pos) - b'0');
         if to == pos {
             return heat_loss;
@@ -83,12 +84,14 @@ fn bfs2(map: &Map, from: Point, to: Point) -> SolutionType {
     to_expand.push(CostAndPoint(0, 1, from.walk(Dir::East), Dir::East));
     to_expand.push(CostAndPoint(0, 1, from.walk(Dir::South), Dir::South));
     while let Some(CostAndPoint(mut heat_loss, steps, pos, dir)) = to_expand.pop() {
-        if let Some(&cost) = expanded.get(&(steps, pos, dir)) {
-            if cost <= heat_loss {
+        if let Some(cost) = expanded.get_mut(&(steps, pos, dir)) {
+            if *cost <= heat_loss {
                 continue;
             }
+            *cost = heat_loss;
+        } else {
+            expanded.insert((steps, pos, dir), heat_loss);
         }
-        expanded.insert((steps, pos, dir), heat_loss);
         heat_loss += SolutionType::from(map.get_at_unchecked(pos) - b'0');
         if to == pos {
             return heat_loss;
