@@ -54,6 +54,7 @@ pub fn solve_part1(data: &InputType) -> SolutionType {
     length
 }
 
+/*
 fn find_cycle(pos: &str, data: &InputType) -> (u64, u64) {
     println!("Solving for {}", pos);
     let mut pos = pos;
@@ -98,41 +99,53 @@ fn find_cycle(pos: &str, data: &InputType) -> (u64, u64) {
     }
     panic!("Shouldn't reach here");
 }
+*/
 
-#[aoc(day8, part2)]
-pub fn solve_part2(data: &InputType) -> SolutionType {
-    let positions: Vec<_> = data.1.keys().filter(|s| s.as_bytes()[2] == b'A').collect();
-
-    println!("Start: {:?}", positions);
-
-    let results: Vec<_> = positions.iter().map(|pos| find_cycle(pos, data)).collect();
-    println!("{:?}", results);
-
-    let mut lengths: Vec<_> = results.iter().map(|(o, l)| o + l).collect();
-
-    let mut n = 0;
-    loop {
-        if n % 1000000 == 0 {
-            println!("Lengths: {:?}", lengths);
-        }
-        n += 1;
-        let mut is_goal = true;
-        for len in &lengths {
-            if *len != lengths[0] {
-                is_goal = false;
-                break;
-            }
-        }
-        if is_goal {
-            break;
-        }
-        let min = *lengths.iter().min().expect("Min value");
-        for i in 0..lengths.len() {
-            if lengths[i] == min {
-                lengths[i] += results[i].1;
-            }
+fn find_first_goal(pos: &str, data: &InputType) -> u64 {
+    // The periods, in the input, are always equal to the length from
+    // the start to the first goal, making it possible to skip finding
+    // the real loop and also makes it possible to use lcm on the results.
+    let mut pos = pos;
+    let mut length = 0;
+    for c in data.0.chars().cycle() {
+        pos = match c {
+            'L' => &data.1.get(pos).expect("Find next").0,
+            'R' => &data.1.get(pos).expect("Find next").1,
+            _ => panic!("Unknown direction"),
+        };
+        length += 1;
+        if pos.as_bytes()[2] == b'Z' {
+            return length;
         }
     }
+    panic!("Shouldn't reach here");
+}
 
-    lengths[0] as usize
+fn gcd(a: u64, b: u64) -> u64 {
+    let mut max = a.max(b);
+    let mut min = a.min(b);
+
+    loop {
+        let r = max % min;
+        if r == 0 {
+            return min;
+        }
+        max = min;
+        min = r;
+    }
+}
+
+fn lcm(a: u64, b: u64) -> u64 {
+    a * (b / gcd(a, b))
+}
+
+#[aoc(day8, part2)]
+pub fn solve_part2(data: &InputType) -> u64 {
+    let positions: Vec<_> = data.1.keys().filter(|s| s.as_bytes()[2] == b'A').collect();
+
+    let results: Vec<_> = positions
+        .iter()
+        .map(|pos| find_first_goal(pos, data))
+        .collect();
+    results.iter().fold(1, |acc, &v| lcm(acc, v))
 }
