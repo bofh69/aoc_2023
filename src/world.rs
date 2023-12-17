@@ -452,21 +452,27 @@ where
         U: Num + Ord + Copy + std::fmt::Debug,
     {
         // TODO: Give path instead?
-        let mut expanded = std::collections::HashSet::new();
+        let mut expanded = std::collections::HashMap::new();
         let mut to_expand = std::collections::BinaryHeap::new();
         to_expand.push(CostAndPoint(Zero::zero(), from));
-        while let Some(CostAndPoint(steps, pos)) = to_expand.pop() {
-            if !expanded.insert(pos) {
-                continue;
-            }
+        while let Some(CostAndPoint(cost, pos)) = to_expand.pop() {
             if to == pos {
-                return steps;
+                return cost;
             }
-            for (new_steps, pos) in self
+            if let Some(old_cost) = expanded.get_mut(&pos) {
+                if *old_cost <= cost {
+                    continue;
+                } else {
+                    *old_cost = cost;
+                }
+            } else {
+                expanded.insert(pos, cost);
+            }
+            for (new_cost, pos) in self
                 .neighbors(pos)
-                .filter_map(|(pos, dir, c)| f(self, pos, dir, c).map(|step| (step + steps, pos)))
+                .filter_map(|(pos, dir, c)| f(self, pos, dir, c).map(|step| (step + cost, pos)))
             {
-                to_expand.push(CostAndPoint(new_steps, pos));
+                to_expand.push(CostAndPoint(new_cost, pos));
             }
         }
         Zero::zero()
