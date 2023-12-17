@@ -48,12 +48,12 @@ fn bfs(map: &Map, from: Point, to: Point) -> SolutionType {
         if to == pos {
             return heat_loss;
         }
-        let dir_left = dir.turn_left().turn_left();
+        let dir_left = dir.turn_cardinal_left();
         let pos_left = pos.walk(dir_left);
         if map.is_inside_map(pos_left) {
             to_expand.push(CostAndPoint(heat_loss, 1, pos_left, dir_left));
         }
-        let dir_right = dir.turn_right().turn_right();
+        let dir_right = dir.turn_cardinal_right();
         let pos_right = pos.walk(dir_right);
         if map.is_inside_map(pos_right) {
             to_expand.push(CostAndPoint(heat_loss, 1, pos_right, dir_right));
@@ -94,12 +94,12 @@ fn bfs2(map: &Map, from: Point, to: Point) -> SolutionType {
             return heat_loss;
         }
         if steps >= 4 {
-            let dir_left = dir.turn_left().turn_left();
+            let dir_left = dir.turn_cardinal_left();
             let pos_left = pos.walk(dir_left);
             if map.is_inside_map(pos_left) {
                 to_expand.push(CostAndPoint(heat_loss, 1, pos_left, dir_left));
             }
-            let dir_right = dir.turn_right().turn_right();
+            let dir_right = dir.turn_cardinal_right();
             let pos_right = pos.walk(dir_right);
             if map.is_inside_map(pos_right) {
                 to_expand.push(CostAndPoint(heat_loss, 1, pos_right, dir_right));

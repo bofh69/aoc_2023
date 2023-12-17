@@ -15,6 +15,27 @@ pub enum Dir {
     SouthWest,
 }
 
+impl std::fmt::Display for Dir {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use Dir::*;
+        write!(
+            f,
+            "{}",
+            match self {
+                None => "No direction",
+                North => "North",
+                South => "South",
+                East => "East",
+                West => "West",
+                NorthEast => "North-East",
+                NorthWest => "North-West",
+                SouthEast => "South-East",
+                SouthWest => "South-West",
+            }
+        )
+    }
+}
+
 impl Dir {
     pub fn turn_right(self) -> Self {
         use Dir::*;
@@ -43,6 +64,30 @@ impl Dir {
             NorthWest => West,
             SouthEast => East,
             SouthWest => South,
+        }
+    }
+
+    pub fn turn_cardinal_left(self) -> Self {
+        use Dir::*;
+        match self {
+            None => self,
+            North => West,
+            South => East,
+            East => North,
+            West => South,
+            _ => panic!("Direction {} is invalid", self),
+        }
+    }
+
+    pub fn turn_cardinal_right(self) -> Self {
+        use Dir::*;
+        match self {
+            None => self,
+            North => East,
+            South => West,
+            East => South,
+            West => North,
+            _ => panic!("Direction {} is invalid", self),
         }
     }
 }

@@ -45,18 +45,18 @@ fn calculate_energize(map: &Map, start: Point, dir: Dir) -> SolutionType {
                     pos = pos.walk(dir);
                 }
                 (b'/', East | West) | (b'\\', North | South) => {
-                    dir = dir.turn_left().turn_left();
+                    dir = dir.turn_cardinal_left();
                     pos = pos.walk(dir);
                 }
                 (b'\\', East | West) | (b'/', North | South) => {
-                    dir = dir.turn_right().turn_right();
+                    dir = dir.turn_cardinal_right();
                     pos = pos.walk(dir);
                 }
                 (b'-', North | South) | (b'|', East | West) => {
-                    let dir1 = dir.turn_left().turn_left();
+                    let dir1 = dir.turn_cardinal_left();
                     let pos1 = pos.walk(dir1);
                     add_light(&mut moving_lights, &mut to_expand, map, pos1, dir1);
-                    dir = dir.turn_right().turn_right();
+                    dir = dir.turn_cardinal_right();
                     pos = pos.walk(dir);
                 }
                 x => unreachable!("{:?}", x),
