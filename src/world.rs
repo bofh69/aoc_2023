@@ -206,6 +206,29 @@ where
         }
     }
 
+    pub fn add_boarder(&mut self, val: u8) {
+        for y in range(Zero::zero(), self.get_height()) {
+            self.set_at(Point { x: Zero::zero(), y }, val);
+            self.set_at(
+                Point {
+                    x: self.get_width() - One::one(),
+                    y,
+                },
+                val,
+            );
+        }
+        for x in range(Zero::zero(), self.get_width()) {
+            self.set_at(Point { x, y: Zero::zero() }, val);
+            self.set_at(
+                Point {
+                    x,
+                    y: self.get_height() - One::one(),
+                },
+                val,
+            );
+        }
+    }
+
     pub fn from_string(s: &str) -> Self
     where
         T: TryFrom<usize>,

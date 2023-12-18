@@ -59,24 +59,7 @@ pub fn solve_part1(data: &[InputType]) -> SolutionType {
 
     let mut map = Map::new(max_x - min_x + 5, max_y - min_y + 5);
 
-    for y in 0..map.get_height() {
-        let pos = Point { x: 0, y };
-        map.set_at(pos, b'O');
-        let pos = Point {
-            x: map.get_width() - 1,
-            y,
-        };
-        map.set_at(pos, b'O');
-    }
-    for x in 0..map.get_width() {
-        let pos = Point { x, y: 0 };
-        map.set_at(pos, b'O');
-        let pos = Point {
-            x,
-            y: map.get_height() - 1,
-        };
-        map.set_at(pos, b'O');
-    }
+    map.add_boarder(b'O');
 
     for pos in points {
         let pos = Point {
