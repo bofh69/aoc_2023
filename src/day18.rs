@@ -105,11 +105,11 @@ fn type_from_dirs(from: Dir, to: Dir) -> u8 {
     }
 }
 
-fn area_for_y(y: i32, lines: &Vec<(Point, u8, Point, u8)>) -> (u64, u64) {
+fn area_for_y(y: i32, lines: &[(Point, u8, Point, u8)]) -> (u64, u64) {
     let mut row: Vec<_> = lines
         .iter()
         .filter(|(from, _, to, _)| from.y <= y && to.y >= y || to.y <= y && from.y >= y)
-        .map(|(from, from_type, to, to_type)| {
+        .flat_map(|(from, from_type, to, to_type)| {
             let mut result = vec![];
             if from.y == y {
                 result.push((*from, *from_type));
@@ -122,7 +122,6 @@ fn area_for_y(y: i32, lines: &Vec<(Point, u8, Point, u8)>) -> (u64, u64) {
             }
             result
         })
-        .flatten()
         .unique()
         .collect();
     row.sort_by(|(from1, _), (from2, _)| from1.x.cmp(&from2.x));
