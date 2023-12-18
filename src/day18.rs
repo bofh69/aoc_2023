@@ -9,7 +9,7 @@ use regex::Regex;
 use std::collections::HashSet;
 
 type InputType = (u8, u8, u32);
-type SolutionType = usize;
+type SolutionType = u64;
 
 #[aoc_generator(day18)]
 pub fn input_generator(input: &str) -> Vec<InputType> {
@@ -89,7 +89,7 @@ pub fn solve_part1(data: &[InputType]) -> SolutionType {
     map.flood_cardinal(Point { x: 1, y: 1 }, b'.', b'O');
     // map.print();
     SolutionType::try_from(map.get_width() * map.get_height()).expect("Number")
-        - map.find(b'O').len()
+        - SolutionType::try_from(map.find(b'O').len()).expect("non negative number")
 }
 
 fn type_from_dirs(from: Dir, to: Dir) -> u8 {
@@ -130,7 +130,6 @@ fn area_for_y(y: i32, lines: &[(Point, u8, Point, u8)]) -> (u64, u64) {
     let mut sum_below = 0u64;
     let mut is_inside = false;
     let mut last_pos = Point { x: 0, y: 0 };
-    // let mut last_typ = b'.';
 
     let mut row = row.iter().peekable();
 
@@ -142,7 +141,6 @@ fn area_for_y(y: i32, lines: &[(Point, u8, Point, u8)]) -> (u64, u64) {
                 }
                 is_inside = !is_inside;
                 last_pos = *pos;
-                // last_typ = *typ;
             }
             b'F' => {
                 if let Some((next_pos, next_typ)) = row.peek() {
@@ -157,7 +155,6 @@ fn area_for_y(y: i32, lines: &[(Point, u8, Point, u8)]) -> (u64, u64) {
                             last_pos = *pos;
                         }
                         is_inside = !is_inside;
-                        // last_typ = *typ;
                         row.next();
                     } else if *next_typ == b'7' {
                         if is_inside {
@@ -170,7 +167,6 @@ fn area_for_y(y: i32, lines: &[(Point, u8, Point, u8)]) -> (u64, u64) {
                             sum_below +=
                                 u64::try_from(next_pos.x - pos.x + 1).expect("Positive number");
                         }
-                        // last_typ = *typ;
                         row.next();
                     } else {
                         unreachable!("Strange typ {}", *typ as char);
@@ -191,7 +187,6 @@ fn area_for_y(y: i32, lines: &[(Point, u8, Point, u8)]) -> (u64, u64) {
                         }
                         is_inside = !is_inside;
                         last_pos = *next_pos;
-                        // last_typ = *typ;
                         row.next();
                     } else if *next_typ == b'J' {
                         if is_inside {
@@ -199,7 +194,6 @@ fn area_for_y(y: i32, lines: &[(Point, u8, Point, u8)]) -> (u64, u64) {
                             sum_extra_line +=
                                 u64::try_from(next_pos.x - pos.x + 1).expect("Positive number");
                         }
-                        // last_typ = *typ;
                         row.next();
                     } else {
                         unreachable!("Strange typ {}", *typ as char);
@@ -215,16 +209,9 @@ fn area_for_y(y: i32, lines: &[(Point, u8, Point, u8)]) -> (u64, u64) {
 }
 
 #[aoc(day18, part2)]
-pub fn solve_part2(_data: &[InputType]) -> i64 {
+pub fn solve_part2(_data: &[InputType]) -> SolutionType {
     let mut pos = Point { x: 0, y: 0 };
-    let lines: Vec<_> =
-    /*
-    [(3, 0), (3, 1),
-     (2, 2), (2, 3),
-    (1, 2), (1, 3)].iter()
-        .map(|(line, num)| {
-    */
-    _data
+    let lines: Vec<_> = _data
         .iter()
         .map(|(_, _, num)| {
             let line = i32::try_from(num >> 4).expect("number");
@@ -274,13 +261,16 @@ pub fn solve_part2(_data: &[InputType]) -> i64 {
         .collect();
     y_pos.sort();
     let current_area = area_for_y(y_pos[0], &lines);
-    let mut sum = (current_area.1) as i64;
+    let mut sum = current_area.1;
     let mut current_area = current_area.0;
     let mut last_y = y_pos[0];
     for &y in y_pos.iter().skip(1) {
-        sum += (current_area * u64::try_from(y - last_y).expect("Positive number")) as i64;
+        sum += SolutionType::try_from(
+            current_area * u64::try_from(y - last_y).expect("Positive number"),
+        )
+        .expect("Number");
         let next_area = area_for_y(y, &lines);
-        sum += (next_area.1) as i64;
+        sum += SolutionType::try_from(next_area.1).expect("Positive number");
         last_y = y;
         current_area = next_area.0;
     }
