@@ -59,8 +59,6 @@ pub fn solve_part1(data: &[InputType]) -> SolutionType {
 
     let mut map = Map::new(max_x - min_x + 5, max_y - min_y + 5);
 
-    println!("{}, {}", map.get_width(), map.get_height());
-
     for y in 0..map.get_height() {
         let pos = Point { x: 0, y };
         map.set_at(pos, b'O');
@@ -87,8 +85,9 @@ pub fn solve_part1(data: &[InputType]) -> SolutionType {
         };
         map.set_at(pos, b'#');
     }
+
     map.flood_cardinal(Point { x: 1, y: 1 }, b'.', b'O');
-    map.print();
+    // map.print();
     SolutionType::try_from(map.get_width() * map.get_height()).expect("Number")
         - map.find(b'O').len()
 }
@@ -106,7 +105,7 @@ fn type_from_dirs(from: Dir, to: Dir) -> u8 {
     }
 }
 
-fn area_for_y(y: i32, lines: &Vec<(Point, u8, Point, u8)>) -> u64 {
+fn area_for_y(y: i32, lines: &Vec<(Point, u8, Point, u8)>) -> (u64, u64) {
     let mut row: Vec<_> = lines
         .iter()
         .filter(|(from, _, to, _)| from.y <= y && to.y >= y || to.y <= y && from.y >= y)
@@ -128,39 +127,109 @@ fn area_for_y(y: i32, lines: &Vec<(Point, u8, Point, u8)>) -> u64 {
         .collect();
     row.sort_by(|(from1, _), (from2, _)| from1.x.cmp(&from2.x));
 
-    println!("For line {}", y);
-    println!("{:?}", row);
-    let mut sum = 0;
+    let mut sum_extra_line = 0u64;
+    let mut sum_below = 0u64;
     let mut is_inside = false;
     let mut last_pos = Point { x: 0, y: 0 };
-    let mut last_typ = b'.';
+    // let mut last_typ = b'.';
 
-    for (pos, typ) in row {
-        if typ == b'|' {
-            if is_inside {
-                sum += pos.x - last_pos.x + 1;
+    let mut row = row.iter().peekable();
+
+    while let Some((pos, typ)) = row.next() {
+        match typ {
+            b'|' => {
+                if is_inside {
+                    sum_below += u64::try_from(pos.x - last_pos.x + 1).expect("Positive number");
+                }
+                is_inside = !is_inside;
+                last_pos = *pos;
+                // last_typ = *typ;
             }
-            is_inside = !is_inside;
-            last_pos = pos;
-            last_typ = typ;
-        } else if is_inside {
-            match (typ, last_typ) {
-                (b'F', _) => {
+            b'F' => {
+                if let Some((next_pos, next_typ)) = row.peek() {
+                    if *next_typ == b'J' {
+                        if is_inside {
+                            sum_below +=
+                                u64::try_from(pos.x - last_pos.x + 1).expect("Positive number");
+                            sum_extra_line +=
+                                u64::try_from(next_pos.x - pos.x).expect("Positive number");
+                            last_pos = *next_pos;
+                        } else {
+                            last_pos = *pos;
+                        }
+                        is_inside = !is_inside;
+                        // last_typ = *typ;
+                        row.next();
+                    } else if *next_typ == b'7' {
+                        if is_inside {
+                            sum_below +=
+                                u64::try_from(pos.x - last_pos.x + 1).expect("Positive number");
+                            sum_extra_line +=
+                                u64::try_from(next_pos.x - pos.x - 1).expect("Positive number");
+                            last_pos = *next_pos;
+                        } else {
+                            sum_below +=
+                                u64::try_from(next_pos.x - pos.x + 1).expect("Positive number");
+                        }
+                        // last_typ = *typ;
+                        row.next();
+                    } else {
+                        unreachable!("Strange typ {}", *typ as char);
+                    }
+                } else {
+                    unreachable!("No next after F!");
                 }
             }
-        } else {
+            b'L' => {
+                if let Some((next_pos, next_typ)) = row.peek() {
+                    if *next_typ == b'7' {
+                        if is_inside {
+                            sum_below += u64::try_from(next_pos.x - last_pos.x + 1)
+                                .expect("Positive number");
+                        } else {
+                            sum_extra_line +=
+                                u64::try_from(next_pos.x - pos.x).expect("Positive number");
+                        }
+                        is_inside = !is_inside;
+                        last_pos = *next_pos;
+                        // last_typ = *typ;
+                        row.next();
+                    } else if *next_typ == b'J' {
+                        if is_inside {
+                        } else {
+                            sum_extra_line +=
+                                u64::try_from(next_pos.x - pos.x + 1).expect("Positive number");
+                        }
+                        // last_typ = *typ;
+                        row.next();
+                    } else {
+                        unreachable!("Strange typ {}", *typ as char);
+                    }
+                } else {
+                    unreachable!("No next after L!");
+                }
+            }
+            _ => unreachable!("Unexpected type {}", *typ as char),
         }
     }
-    sum
+    (sum_below, sum_extra_line)
 }
 
 #[aoc(day18, part2)]
-pub fn solve_part2(data: &[InputType]) -> SolutionType {
+pub fn solve_part2(_data: &[InputType]) -> i64 {
     let mut pos = Point { x: 0, y: 0 };
-    let lines: Vec<_> = data
+    let lines: Vec<_> =
+    /*
+    [(3, 0), (3, 1),
+     (2, 2), (2, 3),
+    (1, 2), (1, 3)].iter()
+        .map(|(line, num)| {
+    */
+    _data
         .iter()
         .map(|(_, _, num)| {
             let line = i32::try_from(num >> 4).expect("number");
+
             let from = pos;
             let dir = match num & 15 {
                 0 => {
@@ -184,6 +253,7 @@ pub fn solve_part2(data: &[InputType]) -> SolutionType {
             (from, pos, dir)
         })
         .collect();
+
     let n_lines = lines.len();
     let lines: Vec<_> = lines
         .iter()
@@ -198,28 +268,22 @@ pub fn solve_part2(data: &[InputType]) -> SolutionType {
             (*from, from_type, *to, to_type)
         })
         .collect();
-    println!("{:?}", lines);
     let mut y_pos: Vec<_> = lines
         .iter()
         .map(|(from, _, _, _)| from.y)
         .unique()
         .collect();
     y_pos.sort();
-    println!("{:?}", y_pos);
-    let mut sum = 0;
-    let mut current_area = area_for_y(y_pos[0], &lines);
+    let current_area = area_for_y(y_pos[0], &lines);
+    let mut sum = (current_area.1) as i64;
+    let mut current_area = current_area.0;
     let mut last_y = y_pos[0];
-    println!("Start area: {}", current_area);
     for &y in y_pos.iter().skip(1) {
-        println!("Line {}", y);
-        sum += (current_area * u64::try_from(y - last_y).expect("Positive number"))
-            as SolutionType;
+        sum += (current_area * u64::try_from(y - last_y).expect("Positive number")) as i64;
         let next_area = area_for_y(y, &lines);
-        println!("Next area: {}", current_area);
-        sum += usize::try_from(current_area.max(next_area)).expect("Positive number");
-        println!("Total sum: {}", sum);
+        sum += (next_area.1) as i64;
         last_y = y;
-        current_area = next_area;
+        current_area = next_area.0;
     }
     sum
 }
