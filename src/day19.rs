@@ -138,10 +138,6 @@ pub fn solve_part1(data: &InputType) -> SolutionType {
 }
 
 /*
-fn union_range(dest: &mut Vec<[i16; 8]>, a: &[i16; 8], b: &[i16; 8]) {
-
-}
-
 fn intersect_range(a: &mut [i16; 8], b: &[i16; 8]) {
     for i in 0..4 {
         a[i * 2] = a[i * 2].max(b[i * 2]);
@@ -195,7 +191,7 @@ fn update_ranges(
                     if range[rule.field as usize * 2 + 1] > rule.value + 1 {
                         let mut new_range = *range;
                         new_range[rule.field as usize * 2] =
-                            new_range[rule.field as usize * 2].max(rule.value);
+                            new_range[rule.field as usize * 2].max(rule.value + 1);
                         result.push(new_range);
                     }
 
@@ -204,10 +200,11 @@ fn update_ranges(
                     }
 
                     range[rule.field as usize * 2 + 1] =
-                        range[rule.field as usize * 2 + 1].min(rule.value);
+                        range[rule.field as usize * 2 + 1].min(rule.value + 1);
                 }
                 (Action::Reject, true) => {
                     // Rule is V[x] < y => REJECT:
+                    println!("REJECT[{}] < {}", rule.field, rule.value);
                     if range[rule.field as usize * 2 + 1] <= rule.value {
                         continue 'range;
                     }
@@ -222,7 +219,7 @@ fn update_ranges(
                     }
 
                     range[rule.field as usize * 2 + 1] =
-                        range[rule.field as usize * 2 + 1].min(rule.value);
+                        range[rule.field as usize * 2 + 1].min(rule.value + 1);
                 }
                 (Action::Goto(ref s), true) => {
                     // Rule is V[x] < y => GOTO(x):
@@ -247,7 +244,7 @@ fn update_ranges(
                     if range[rule.field as usize * 2 + 1] > rule.value + 1 {
                         let mut new_range = *range;
                         new_range[rule.field as usize * 2] =
-                            new_range[rule.field as usize * 2].max(rule.value);
+                            new_range[rule.field as usize * 2].max(rule.value + 1);
                         let mut new_ranges = update_ranges(rules, s, &[new_range]);
                         result.append(&mut new_ranges);
                     }
@@ -257,7 +254,7 @@ fn update_ranges(
                     }
 
                     range[rule.field as usize * 2 + 1] =
-                        range[rule.field as usize * 2 + 1].min(rule.value);
+                        range[rule.field as usize * 2 + 1].min(rule.value + 1);
                 }
             }
         }
@@ -265,7 +262,8 @@ fn update_ranges(
 
     result
         .iter()
-        .filter(|&a| !result.iter().any(|b| is_proper_subset(a, b))).copied()
+        .filter(|&a| !result.iter().any(|b| is_proper_subset(a, b)))
+        .copied()
         .collect()
 }
 
@@ -297,12 +295,217 @@ pub fn solve_part2(data: &InputType) -> SolutionType {
 
 #[cfg(test)]
 mod test {
-    #[test]
-    fn test_intersect() {
-        let mut a = [0, 2001, 2000, 4001, 1000, 3001, 0, 4001];
-        let b = [0, 4001, 0, 4001, 0, 4001, 1000, 3001];
+    /*
+        #[test]
+        fn test_intersect() {
+            let mut a = [0, 2001, 2000, 4001, 1000, 3001, 0, 4001];
+            let b = [0, 4001, 0, 4001, 0, 4001, 1000, 3001];
 
-        super::intersect_range(&mut a, &b);
-        assert_eq!(a, [0, 2001, 2000, 4001, 1000, 3001, 1000, 3001]);
+            super::intersect_range(&mut a, &b);
+            assert_eq!(a, [0, 2001, 2000, 4001, 1000, 3001, 1000, 3001]);
+        }
+    */
+    #[test]
+    fn test_action_accept_less() {
+        use super::*;
+        let mut rules = HashMap::new();
+        rules.insert(
+            "in".to_string(),
+            Vec::from([
+                Rule {
+                    field: 0,
+                    is_less_than: true,
+                    value: 5,
+                    action: Action::Accept,
+                },
+                Rule {
+                    field: 1,
+                    is_less_than: true,
+                    value: 5,
+                    action: Action::Accept,
+                },
+            ]),
+        );
+        let res = update_ranges(&rules, "in", &[[0, 10, 0, 10, 0, 10, 0, 10]]);
+        assert_eq!(
+            res,
+            Vec::from([[0, 5, 0, 10, 0, 10, 0, 10], [5, 10, 0, 5, 0, 10, 0, 10],])
+        );
+    }
+
+    #[test]
+    fn test_action_accept_greater() {
+        use super::*;
+        let mut rules = HashMap::new();
+        rules.insert(
+            "in".to_string(),
+            Vec::from([
+                Rule {
+                    field: 0,
+                    is_less_than: false,
+                    value: 5,
+                    action: Action::Accept,
+                },
+                Rule {
+                    field: 1,
+                    is_less_than: true,
+                    value: 5,
+                    action: Action::Accept,
+                },
+            ]),
+        );
+        let res = update_ranges(&rules, "in", &[[0, 10, 0, 10, 0, 10, 0, 10]]);
+        assert_eq!(
+            res,
+            Vec::from([[6, 10, 0, 10, 0, 10, 0, 10], [0, 6, 0, 5, 0, 10, 0, 10],])
+        );
+    }
+
+    #[test]
+    fn test_action_reject_less() {
+        use super::*;
+        let mut rules = HashMap::new();
+        rules.insert(
+            "in".to_string(),
+            Vec::from([
+                Rule {
+                    field: 0,
+                    is_less_than: true,
+                    value: 5,
+                    action: Action::Reject,
+                },
+                Rule {
+                    field: 0,
+                    is_less_than: true,
+                    value: i16::MAX,
+                    action: Action::Accept,
+                },
+            ]),
+        );
+        let res = update_ranges(&rules, "in", &[[0, 10, 0, 10, 0, 10, 0, 10]]);
+        assert_eq!(res, Vec::from([[5, 10, 0, 10, 0, 10, 0, 10]]));
+    }
+
+    #[test]
+    fn test_action_reject_greater() {
+        use super::*;
+        let mut rules = HashMap::new();
+        rules.insert(
+            "in".to_string(),
+            Vec::from([
+                Rule {
+                    field: 0,
+                    is_less_than: false,
+                    value: 5,
+                    action: Action::Reject,
+                },
+                Rule {
+                    field: 0,
+                    is_less_than: true,
+                    value: i16::MAX,
+                    action: Action::Accept,
+                },
+            ]),
+        );
+        let res = update_ranges(&rules, "in", &[[0, 10, 0, 10, 0, 10, 0, 10]]);
+        assert_eq!(res, Vec::from([[0, 6, 0, 10, 0, 10, 0, 10]]));
+    }
+
+    #[test]
+    fn test_action_goto_less() {
+        use super::*;
+        let mut rules = HashMap::new();
+        rules.insert(
+            "acc".to_string(),
+            Vec::from([Rule {
+                field: 0,
+                is_less_than: true,
+                value: 20,
+                action: Action::Accept,
+            }]),
+        );
+        rules.insert(
+            "in".to_string(),
+            Vec::from([
+                Rule {
+                    field: 0,
+                    is_less_than: true,
+                    value: 5,
+                    action: Action::Goto("acc".to_string()),
+                },
+                Rule {
+                    field: 0,
+                    is_less_than: true,
+                    value: i16::MAX,
+                    action: Action::Reject,
+                },
+            ]),
+        );
+        let res = update_ranges(&rules, "in", &[[0, 10, 0, 10, 0, 10, 0, 10]]);
+        assert_eq!(res, Vec::from([[0, 5, 0, 10, 0, 10, 0, 10]]));
+    }
+
+    #[test]
+    fn test_action_goto_greater() {
+        use super::*;
+        let mut rules = HashMap::new();
+        rules.insert(
+            "acc".to_string(),
+            Vec::from([Rule {
+                field: 0,
+                is_less_than: true,
+                value: 20,
+                action: Action::Accept,
+            }]),
+        );
+        rules.insert(
+            "in".to_string(),
+            Vec::from([
+                Rule {
+                    field: 0,
+                    is_less_than: false,
+                    value: 5,
+                    action: Action::Goto("acc".to_string()),
+                },
+                Rule {
+                    field: 0,
+                    is_less_than: true,
+                    value: i16::MAX,
+                    action: Action::Reject,
+                },
+            ]),
+        );
+        let res = update_ranges(&rules, "in", &[[0, 10, 0, 10, 0, 10, 0, 10]]);
+        assert_eq!(res, Vec::from([[6, 10, 0, 10, 0, 10, 0, 10]]));
+    }
+    #[test]
+    fn test_action_accept_middle() {
+        use super::*;
+        let mut rules = HashMap::new();
+        rules.insert(
+            "in".to_string(),
+            Vec::from([
+                Rule {
+                    field: 0,
+                    is_less_than: true,
+                    value: 4,
+                    action: Action::Reject,
+                },
+                Rule {
+                    field: 0,
+                    is_less_than: true,
+                    value: 6,
+                    action: Action::Accept,
+                },
+                Rule {
+                    field: 0,
+                    is_less_than: false,
+                    value: 5,
+                    action: Action::Reject,
+                },
+            ]),
+        );
+        let res = update_ranges(&rules, "in", &[[0, 10, 0, 10, 0, 10, 0, 10]]);
+        assert_eq!(res, Vec::from([[4, 6, 0, 10, 0, 10, 0, 10]]));
     }
 }
