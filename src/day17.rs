@@ -31,6 +31,8 @@ impl<T: Eq + PartialEq> PartialOrd for CostAndPoint<T> {
     }
 }
 
+type PointData = (u8, Point, Dir);
+
 fn bfs(map: &Map, from: Point, to: Point) -> SolutionType {
     let mut expanded = std::collections::HashMap::new();
     let mut to_expand = std::collections::BinaryHeap::new();
@@ -80,7 +82,7 @@ pub fn solve_part1(map: &Map) -> SolutionType {
 }
 
 // Turn into trait?
-fn search_for_node(map: &Map, start: &[(u8, Point, Dir)], goal: Point) -> SolutionType {
+fn search_for_node(map: &Map, start: &[PointData], goal: Point) -> SolutionType {
     let mut expanded = std::collections::HashMap::new();
     let mut to_expand = std::collections::BinaryHeap::new();
 
@@ -108,14 +110,14 @@ fn search_for_node(map: &Map, start: &[(u8, Point, Dir)], goal: Point) -> Soluti
     0
 }
 
-fn node_is_at_goal(goal: Point, node_state: &(u8, Point, Dir)) -> bool {
+fn node_is_at_goal(goal: Point, node_state: &PointData) -> bool {
     goal == node_state.1
 }
 
 fn node_expand(
-    node_state: &(u8, Point, Dir),
+    node_state: &PointData,
     map: &Map,
-    to_expand: &mut std::collections::BinaryHeap<CostAndPoint<(u16, (u8, Point, Dir))>>,
+    to_expand: &mut std::collections::BinaryHeap<CostAndPoint<(u16, PointData)>>,
     estimated_cost: u16,
     ack_cost: u16,
 ) {
@@ -143,11 +145,11 @@ fn node_expand(
     }
 }
 
-fn node_cost(map: &Map, node_state: &(u8, Point, Dir)) -> u16 {
+fn node_cost(map: &Map, node_state: &PointData) -> u16 {
     SolutionType::from(map.get_at_unchecked(node_state.1) - b'0')
 }
 
-fn node_underestimate_cost_to_goal(node_state: &(u8, Point, Dir), goal: Point) -> u16 {
+fn node_underestimate_cost_to_goal(node_state: &PointData, goal: Point) -> u16 {
     node_state.1.manhattan_distance(goal) as u16
 }
 
