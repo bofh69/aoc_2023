@@ -239,6 +239,7 @@ pub fn solve_part2(map: &Map) -> SolutionType {
             println!();
         }
         */
+        println!("{:4} {:?}", _i, row);
         counts.push(row);
         // map2.print();
         next_gen(&mut map2);
