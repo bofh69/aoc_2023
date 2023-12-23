@@ -20,14 +20,25 @@ fn is_walkable(c: u8) -> bool {
 }
 
 fn is_node(map: &Map, pos: Point, c: u8) -> bool {
+    if pos == (Point { x: 2, y: 1 })
+        || pos
+            == (Point {
+                x: map.get_width() - 3,
+                y: map.get_height() - 2,
+            })
+    {
+        return true;
+    }
     if is_walkable(c) {
         let mut count = 0;
         for dir in [North, South, East, West] {
             let new_pos = pos.walk(dir);
-            if Some(c) != map.get_at(new_pos) && is_walkable(c) {
-                count += 1;
-                if count > 2 {
-                    return true;
+            if let Some(c) = map.get_at(new_pos) {
+                if is_walkable(c) {
+                    count += 1;
+                    if count > 2 {
+                        return true;
+                    }
                 }
             }
         }
@@ -77,13 +88,28 @@ pub fn solve_part2(map: &Map) -> SolutionType {
         y: map.get_height() - 2,
     };
 
-    let mut nodes = vec![];
-    for (pos, c) in map.iter() {
-        if is_node(map, pos, c) {
-            nodes.push(pos);
-        }
-    }
+    let nodes: Vec<_> = map
+        .iter()
+        .filter_map(|(pos, c)| {
+            if is_node(map, pos, c) {
+                Some(pos)
+            } else {
+                Option::None
+            }
+        })
+        .collect();
+
     let pos_to_node: HashMap<_, _> = nodes.iter().enumerate().map(|(k, &v)| (v, k)).collect();
+
+    /*
+    map.print_with_overlay(|pos, _c| {
+        if pos_to_node.contains_key(&pos) {
+            Some(b'X')
+        } else {
+            Option::None
+        }
+    });
+    */
 
     let start = *pos_to_node.get(&start).expect("Start node added");
     let goal = *pos_to_node.get(&goal).expect("Goal node added");
