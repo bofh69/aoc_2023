@@ -204,7 +204,6 @@ fn update_ranges(
                 }
                 (Action::Reject, true) => {
                     // Rule is V[x] < y => REJECT:
-                    println!("REJECT[{}] < {}", rule.field, rule.value);
                     if range[rule.field as usize * 2 + 1] <= rule.value {
                         continue 'range;
                     }
@@ -275,12 +274,14 @@ pub fn solve_part2(data: &InputType) -> SolutionType {
 
     let ranges = update_ranges(rules, "in", &ranges);
 
+    /*
     for ran in &ranges {
         println!(
             "[{:4}..{:4}, {:4}..{:4}, {:4}..{:4}, {:4}..{:4}]",
             ran[0], ran[1], ran[2], ran[3], ran[4], ran[5], ran[6], ran[7],
         );
     }
+    */
 
     ranges
         .iter()
