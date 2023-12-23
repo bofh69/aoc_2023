@@ -117,19 +117,25 @@ pub fn solve_part2(map: &Map) -> SolutionType {
         .collect();
 
     let mut frontier = Vec::new();
-    frontier.push((HashSet::new(), 0, start));
+    let mut visited = HashSet::new();
+    frontier.push((0i32, start));
     let mut most_steps = 0;
-    while let Some((mut visited, steps, node)) = frontier.pop() {
+    while let Some((steps, node)) = frontier.pop() {
+        if steps == -1 {
+            visited.remove(&node);
+            continue;
+        }
         if !visited.insert(node) {
             continue;
         }
         if node == goal {
             most_steps = most_steps.max(steps);
         }
+        frontier.push((-1, node));
         for (&new_node, new_steps) in &edges[node] {
-            frontier.push((visited.clone(), steps + *new_steps, new_node));
+            frontier.push((steps + *new_steps, new_node));
         }
     }
 
-    most_steps
+    SolutionType::try_from(most_steps).expect("Answer")
 }
