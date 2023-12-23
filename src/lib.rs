@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 use aoc_runner_derive::aoc_lib;
 
+/*
 mod day01;
 mod day02;
 mod day03;
@@ -25,7 +26,8 @@ mod day19;
 mod day20;
 mod day21;
 mod day22;
-// mod day23;
+*/
+mod day23;
 // mod day24;
 // mod day25;
 pub mod world;
