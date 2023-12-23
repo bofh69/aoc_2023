@@ -99,7 +99,11 @@ pub fn solve_part2(map: &Map) -> SolutionType {
         })
         .collect();
 
-    let pos_to_node: HashMap<_, _> = nodes.iter().enumerate().map(|(k, &v)| (v, k)).collect();
+    let pos_to_node: HashMap<_, _> = nodes
+        .iter()
+        .enumerate()
+        .map(|(k, &v)| (v, u8::try_from(k).expect("fits")))
+        .collect();
 
     /*
     map.print_with_overlay(|pos, _c| {
@@ -158,7 +162,7 @@ pub fn solve_part2(map: &Map) -> SolutionType {
             most_steps = most_steps.max(steps);
         }
         frontier.push((-1, node));
-        for (&new_node, new_steps) in &edges[node] {
+        for (&new_node, new_steps) in &edges[node as usize] {
             frontier.push((steps + *new_steps, new_node));
         }
     }
