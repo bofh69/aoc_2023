@@ -40,29 +40,46 @@ fn would_hit(mut a_min: Point, mut a_max: Point, b_min: Point, b_max: Point) -> 
 }
 
 fn settle_bricks(data: &mut Vec<(Point, Point, bool)>) {
-    loop {
+    data.sort_by(|a, b| a.2.cmp(&b.2));
+    let mut first = 0;
+    let mut last = data.len();
+    while first < last {
         let mut any_moved = false;
-        for i in 0..data.len() {
+        for i in first..last {
             if data[i].2 {
                 // Its grounded
                 continue;
             }
             let mut can_fall = true;
-            for j in 0..data.len() {
-                if i != j
-                    && (data[i].0 .2 == 1 || would_hit(data[i].0, data[i].1, data[j].0, data[j].1))
-                {
-                    if data[j].2 {
-                        data[i].2 = true;
+            while can_fall {
+                if data[i].0 .2 == 1 {
+                    // Can't fall below ground
+                    data[i].2 = true;
+                    if i == first {
+                        first += 1;
                     }
-                    can_fall = false;
                     break;
                 }
+                for j in 0..data.len() {
+                    if i != j && would_hit(data[i].0, data[i].1, data[j].0, data[j].1) {
+                        if data[j].2 {
+                            data[i].2 = true;
+                            if i == first {
+                                first += 1;
+                            }
+                        }
+                        can_fall = false;
+                        break;
+                    }
+                }
+                if can_fall {
+                    data[i].0 .2 -= 1;
+                    data[i].1 .2 -= 1;
+                    any_moved = true;
+                }
             }
-            if can_fall {
-                data[i].0 .2 -= 1;
-                data[i].1 .2 -= 1;
-                any_moved = true;
+            if !data[i].2 {
+                last = i + 1;
             }
         }
         if !any_moved {
@@ -110,6 +127,7 @@ pub fn solve_part1(data: &[InputType]) -> SolutionType {
                 if support.contains(j) {
                     // Another supports j.
                     has_other_support = true;
+                    break;
                 }
             }
             if !has_other_support {
