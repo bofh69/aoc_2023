@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use aoc_runner_derive::{aoc, aoc_generator};
+use hashbrown::HashMap;
 use regex::Regex;
-use std::collections::HashMap;
 
 type InputType = (String, HashMap<String, (String, String)>);
 type SolutionType = usize;

@@ -5,7 +5,7 @@
 use aoc_runner_derive::aoc;
 
 use super::world::*;
-use std::collections::HashSet;
+use hashbrown::HashSet;
 
 #[aoc(day11, part1)]
 pub fn solve_part1(input: &str) -> i32 {

@@ -5,7 +5,7 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
 use super::world::*;
-use std::collections::HashSet;
+use hashbrown::HashSet;
 
 type SolutionType = i32;
 

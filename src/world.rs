@@ -475,7 +475,7 @@ where
         U: Num + Ord + Copy + std::fmt::Debug,
     {
         // TODO: Give path instead?
-        let mut expanded = std::collections::HashMap::new();
+        let mut expanded = hashbrown::HashMap::new();
         let mut to_expand = std::collections::BinaryHeap::new();
         to_expand.push(CostAndPoint(Zero::zero(), from));
         while let Some(CostAndPoint(cost, pos)) = to_expand.pop() {

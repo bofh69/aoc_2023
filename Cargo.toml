@@ -8,12 +8,11 @@ version = "0.1.0"
 authors = ["Sebastian Andersson <sebastian@bittr.nu>"]
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 aoc-runner = "0.3.0"
 aoc-runner-derive = "0.3.0"
 cached = "0.46.1"
+hashbrown = { version = "0.14.3", features = ["rayon", "inline-more"] }
 itertools = "0.12.0"
 num = "0.4.1"
 rayon = "1.5.0"

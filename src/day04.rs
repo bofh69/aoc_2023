@@ -4,7 +4,7 @@
 
 use aoc_runner_derive::{aoc, aoc_generator};
 
-use std::collections::HashSet;
+use hashbrown::HashSet;
 
 type InputType = (HashSet<u16>, HashSet<u16>);
 type SolutionType = usize;

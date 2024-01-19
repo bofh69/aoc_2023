@@ -5,8 +5,8 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
 use super::world::*;
+use hashbrown::HashSet;
 use rayon::prelude::*;
-use std::collections::HashSet;
 
 type SolutionType = usize;
 

@@ -4,9 +4,9 @@
 
 use super::world::*;
 use aoc_runner_derive::{aoc, aoc_generator};
+use hashbrown::HashSet;
 use itertools::*;
 use regex::Regex;
-use std::collections::HashSet;
 
 type InputType = (u8, u8, u32);
 type SolutionType = u64;

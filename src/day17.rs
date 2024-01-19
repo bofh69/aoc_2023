@@ -5,9 +5,6 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
 use super::world::*;
-// use std::collections::HashSet;
-// use std::collections::HashMap;
-// use rayon::prelude::*;
 
 type SolutionType = u16;
 
@@ -34,7 +31,7 @@ impl<T: Eq + PartialEq> PartialOrd for CostAndPoint<T> {
 type PointData = (u8, Point, Dir);
 
 fn bfs(map: &Map, from: Point, to: Point) -> SolutionType {
-    let mut expanded = std::collections::HashMap::new();
+    let mut expanded = hashbrown::HashMap::new();
     let mut to_expand = std::collections::BinaryHeap::new();
     to_expand.push(CostAndPoint(0, (1, from.walk(Dir::East), Dir::East)));
     to_expand.push(CostAndPoint(0, (1, from.walk(Dir::South), Dir::South)));
@@ -83,7 +80,7 @@ pub fn solve_part1(map: &Map) -> SolutionType {
 
 // Turn into trait?
 fn search_for_node(map: &Map, start: &[PointData], goal: Point) -> SolutionType {
-    let mut expanded = std::collections::HashMap::new();
+    let mut expanded = hashbrown::HashMap::new();
     let mut to_expand = std::collections::BinaryHeap::new();
 
     for node in start {

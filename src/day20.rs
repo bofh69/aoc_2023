@@ -3,10 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use aoc_runner_derive::{aoc, aoc_generator};
-// use rayon::prelude::*;
-use std::collections::{HashMap, VecDeque};
-// use std::ops::Range;
-// use regex::Regex;
+use hashbrown::HashMap;
+use std::collections::VecDeque;
 use ModuleType::*;
 
 #[derive(Debug, Clone, Eq, PartialEq)]

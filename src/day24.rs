@@ -147,7 +147,8 @@ fn find_max_row_in_column(matrix: &[Length], column: usize, row: usize) -> usize
     max_row
 }
 
-fn print_matrix(matrix: &[Length]) {
+fn print_matrix(_matrix: &[Length]) {
+    /*
     for row in 0..6 {
         println!(
             "    {:4} {:4} {:4} {:4} {:4} {:4} {:4}",
@@ -160,6 +161,7 @@ fn print_matrix(matrix: &[Length]) {
             matrix[row * 7 + 6]
         );
     }
+    */
 }
 
 fn swap_rows(matrix: &mut [Length], row1: usize, row2: usize) {
@@ -229,14 +231,14 @@ pub fn solve_part2(data: &[InputType]) -> SolutionType {
     fill_rows_for(&mut matrix[3 * 7..], &data[2], &data[3]);
 
     for column in 0..6 - 1 {
-        println!("Column {}", column);
+        // println!("Column {}", column);
         let max_r = find_max_row_in_column(&matrix, column, column);
         if max_r != column {
-            println!("Swapping {} and {}", column, max_r);
+            //   println!("Swapping {} and {}", column, max_r);
             swap_rows(&mut matrix, column, max_r);
             print_matrix(&matrix);
         }
-        let vi = dbg!(matrix[column * 7 + column]);
+        let vi = matrix[column * 7 + column];
         assert!(vi.abs() > 1e-20);
         for row in column + 1..6 {
             let v = matrix[row * 7 + column];
@@ -250,7 +252,7 @@ pub fn solve_part2(data: &[InputType]) -> SolutionType {
             }
         }
     }
-    println!("Done");
+    // println!("Done");
     print_matrix(&matrix);
 
     let mut res = [0.; 6];
@@ -263,7 +265,7 @@ pub fn solve_part2(data: &[InputType]) -> SolutionType {
         res[i] = (v / matrix[i * 7 + i]).round();
     }
 
-    println!("{:?}", res);
+    // println!("{:?}", res);
 
     (res[0] + res[1] + res[2]).round() as SolutionType
 }

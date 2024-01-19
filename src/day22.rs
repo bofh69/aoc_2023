@@ -4,7 +4,7 @@
 
 use aoc_runner_derive::{aoc, aoc_generator};
 
-use std::collections::HashSet;
+use hashbrown::HashSet;
 
 type Point = (i16, i16, i16);
 type InputType = (Point, Point);

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use aoc_runner_derive::{aoc, aoc_generator};
-use std::collections::{HashMap, HashSet};
+use hashbrown::{HashMap, HashSet};
 
 type InputType = (String, Vec<String>);
 type SolutionType = usize;
@@ -200,7 +200,7 @@ pub fn solve_part1(data: &[InputType]) -> SolutionType {
     */
 
     let (n_in, n_out) = count_size(&edges, start);
-    dbg!(&(n_in, n_out));
+    // dbg!(&(n_in, n_out));
 
     n_in * n_out
 }

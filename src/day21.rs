@@ -5,12 +5,11 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
 use super::world::*;
-// use rayon::prelude::*;
 
 type SolutionType = usize;
 
 fn plots_after_steps(start: Point, map: &Map, steps: i32) -> usize {
-    use std::collections::HashSet;
+    use hashbrown::HashSet;
     let mut found = [HashSet::new(), HashSet::new()];
     let mut front = Vec::new();
     front.push(start);

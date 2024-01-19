@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use aoc_runner_derive::{aoc, aoc_generator};
-// use rayon::prelude::*;
-use std::collections::HashSet;
+use hashbrown::HashSet;
 use std::ops::Range;
 
 type Seed = i64;
@@ -212,7 +211,6 @@ pub fn solve_part2(data: &InputType) -> SolutionType {
 mod test {
     use super::translate_range_with_mapping;
     use super::translate_range_with_mappings;
-    use std::collections::HashSet;
 
     #[test]
     fn translate_range_before() {

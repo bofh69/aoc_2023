@@ -5,7 +5,7 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
 use super::world::*;
-use std::collections::{HashMap, HashSet};
+use hashbrown::{HashMap, HashSet};
 use Dir::*;
 
 type SolutionType = usize;

@@ -4,8 +4,8 @@
 
 use aoc_runner_derive::{aoc, aoc_generator};
 
+use hashbrown::HashMap;
 use rayon::prelude::*;
-use std::collections::HashMap;
 
 type InputType = (Vec<u8>, Vec<u8>);
 type SolutionType = usize;
